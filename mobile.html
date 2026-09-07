@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="theme-color" content="#7C6FF0" />
+  <meta name="creative-medium" content="interactive-prototype" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
+  <title>OneOS Core · 移动端</title>
+  <link rel="stylesheet" href="styles/design-system.css" />
+  <link rel="stylesheet" href="styles/bright-overrides.css" />
+  <link rel="stylesheet" href="styles/design-system-v2.css" />
+  <link rel="stylesheet" href="styles/mobile.css" />
+  <script src="vendor/react.production.min.js"></script>
+  <script src="vendor/react-dom.production.min.js"></script>
+  <script src="vendor/babel.min.js"></script>
+  <!-- V2 数据层（纯JS，无需Babel编译） -->
+  <script src="src/db/database.js"></script>
+  <script src="src/db/notes.js"></script>
+  <script src="src/db/settings.js"></script>
+  <script src="src/data-adapter.js"></script>
+  <!-- V2 编辑器 -->
+  <script src="src/editor/markdown-parser.js"></script>
+  <script src="src/editor/backlink-service.js"></script>
+  <script src="src/editor/tag-service.js"></script>
+  <script src="src/editor/performance-optimizer.js"></script>
+  <!-- V2 知识图谱 -->
+  <script src="src/graph/force-layout.js"></script>
+  <script src="src/graph/graph-data-service.js"></script>
+  <script src="src/graph/graph-exporter.js"></script>
+  <!-- V2 语音交互 -->
+  <script src="src/voice/voice-service.js"></script>
+  <!-- V2 全局搜索 -->
+  <script src="src/search/search-service.js"></script>
+  <!-- V2 资源优化 -->
+  <script src="src/utils/resource-optimizer.js"></script>
+  <!-- V2 AI 服务 -->
+  <script src="src/ai/ollama-service.js"></script>
+  <script src="src/ai/persona-manager.js"></script>
+  <script src="src/ai/rag-service.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #root { height: 100%; width: 100%; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+      overflow-y: auto;
+      background: linear-gradient(160deg, #EEF2FF 0%, #F0F7FF 35%, #FFF5F7 70%, #F0FCF8 100%);
+      background-attachment: fixed;
+      color: #2D3436;
+    }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+    a { text-decoration: none; color: inherit; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    .deco-3d { position: absolute; pointer-events: none; z-index: 0; }
+    .delay-1 { animation: float 6s ease-in-out infinite; }
+    .delay-2 { animation: float 7s ease-in-out infinite 0.5s; }
+    .delay-3 { animation: float 8s ease-in-out infinite 1s; }
+    #mobile-loading {
+      position: fixed; inset: 0; z-index: 99999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: linear-gradient(160deg, #E8F5F0 0%, #F0F4FF 40%, #FFF5F0 100%);
+      transition: opacity 0.5s ease;
+    }
+    #mobile-loading.hidden { opacity: 0; pointer-events: none; }
+    #mobile-loading .logo {
+      width: 64px; height: 64px; border-radius: 20px;
+      background: linear-gradient(135deg, #9B8EF7, #5B4FE0);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 32px rgba(124,111,240,0.4);
+      margin-bottom: 20px;
+      animation: float 3s ease-in-out infinite;
+    }
+    #mobile-loading .logo svg { width: 32px; height: 32px; }
+    #mobile-loading .title { font-size: 22px; font-weight: 800; color: #1a1a2e; margin-bottom: 6px; letter-spacing: -0.5px; }
+    #mobile-loading .subtitle { font-size: 13px; color: rgba(45,55,72,0.5); font-weight: 600; }
+    #mobile-loading .dots { display: flex; gap: 6px; margin-top: 24px; }
+    #mobile-loading .dots span {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: linear-gradient(135deg, #9B8EF7, #5B4FE0);
+      animation: float 1.4s ease-in-out infinite;
+    }
+    #mobile-loading .dots span:nth-child(2) { animation-delay: 0.2s; }
+    #mobile-loading .dots span:nth-child(3) { animation-delay: 0.4s; }
+    #mobile-loading .status { font-size: 12px; color: rgba(45,55,72,0.4); margin-top: 16px; font-family: monospace; }
+    #mobile-loading .error-box {
+      margin-top: 20px; padding: 12px 16px; max-width: 85vw;
+      background: rgba(255,100,100,0.1); border: 1px solid rgba(255,100,100,0.3);
+      border-radius: 12px; font-size: 11px; color: #c0392b; text-align: left;
+      white-space: pre-wrap; word-break: break-all; max-height: 40vh; overflow-y: auto;
+      display: none; line-height: 1.5;
+    }
+    #mobile-loading .error-box.show { display: block; }
+    #mobile-loading .retry-btn {
+      margin-top: 16px; padding: 10px 24px; border-radius: 12px;
+      background: linear-gradient(135deg, #9B8EF7, #5B4FE0); color: white;
+      font-size: 14px; font-weight: 600; display: none; cursor: pointer;
+    }
+    #mobile-loading .retry-btn.show { display: block; }
+  </style>
+</head>
+<body>
+  <div id="mobile-loading">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24" />
+      </svg>
+    </div>
+    <div class="title">OneOS Core</div>
+    <div class="subtitle">灵魂级个人操作系统 · 移动端</div>
+    <div class="dots"><span></span><span></span><span></span></div>
+    <div class="status" id="loading-status">正在加载组件...</div>
+    <div class="error-box" id="loading-error"></div>
+    <button class="retry-btn" id="retry-btn" onclick="location.reload()">重新加载</button>
+  </div>
+
+  <div id="root"></div>
+
+  <!-- 组件加载顺序严格对齐 index.html（桌面版）-->
+  <script type="text/babel" src="components/tweaks-panel.jsx"></script>
+  <script type="text/babel" src="components/design-tokens.jsx"></script>
+  <script type="text/babel" src="components/app-state.jsx"></script>
+  <script type="text/babel" src="components/data.jsx"></script>
+  <script type="text/babel" src="components/kb-data.jsx"></script>
+  <script type="text/babel" src="components/cards.jsx"></script>
+  <script type="text/babel" src="components/sidebar.jsx"></script>
+  <script type="text/babel" src="components/file-sidebar.jsx"></script>
+  <script type="text/babel" src="components/tree-manager.jsx"></script>
+  <script type="text/babel" src="components/backlink-panel.jsx"></script>
+  <script type="text/babel" src="components/tag-manager-panel.jsx"></script>
+  <script type="text/babel" src="components/graph-canvas.jsx"></script>
+  <script type="text/babel" src="components/graph-viewer.jsx"></script>
+  <script type="text/babel" src="components/voice-input.jsx"></script>
+  <script type="text/babel" src="components/global-search.jsx"></script>
+  <script type="text/babel" src="components/editor.jsx"></script>
+  <script type="text/babel" src="components/right-panel.jsx"></script>
+  <script type="text/babel" src="components/search-modal.jsx"></script>
+  <script type="text/babel" src="components/editor-view.jsx"></script>
+  <script type="text/babel" src="components/wysiwyg-editor.jsx"></script>
+  <script type="text/babel" src="components/calendar-data.jsx"></script>
+  <script type="text/babel" src="components/calendar-view.jsx"></script>
+  <script type="text/babel" src="components/day-detail.jsx"></script>
+  <script type="text/babel" src="components/graph-data.jsx"></script>
+  <script type="text/babel" src="components/graph-view.jsx"></script>
+  <script type="text/babel" src="components/elevation-data.jsx"></script>
+  <script type="text/babel" src="components/elevation-view.jsx"></script>
+  <script type="text/babel" src="components/ai-data.jsx"></script>
+  <script type="text/babel" src="components/ai-chat.jsx"></script>
+  <script type="text/babel" src="components/ai-settings.jsx"></script>
+  <script type="text/babel" src="components/social-data.jsx"></script>
+  <script type="text/babel" src="components/social-view.jsx"></script>
+  <script type="text/babel" src="components/social-rules.jsx"></script>
+  <script type="text/babel" src="components/human-data.jsx"></script>
+  <script type="text/babel" src="components/human-view.jsx"></script>
+  <script type="text/babel" src="components/human-detail.jsx"></script>
+  <script type="text/babel" src="components/voice-data.jsx"></script>
+  <script type="text/babel" src="components/voice-asr.jsx"></script>
+  <script type="text/babel" src="components/voice-tts.jsx"></script>
+  <script type="text/babel" src="components/voice-demo.jsx"></script>
+  <script type="text/babel" src="components/circle-data.jsx"></script>
+  <script type="text/babel" src="components/circle-view.jsx"></script>
+  <script type="text/babel" src="components/circle-detail.jsx"></script>
+  <script type="text/babel" src="components/circle-more.jsx"></script>
+  <script type="text/babel" src="components/dashboard.jsx"></script>
+  <script type="text/babel" src="components/settings-dialog.jsx"></script>
+  <script type="text/babel" src="components/app.jsx"></script>
+  <script type="text/babel" src="components/mobile-nav.jsx"></script>
+
+  <!-- 渲染逻辑：轮询等待 Babel 编译完成 -->
+  <script>
+    var errors = [];
+    window.addEventListener('error', function(e) {
+      var msg = e.message;
+      if (e.filename) {
+        var fn = e.filename.split('/').pop();
+        msg = fn + ': ' + msg;
+      }
+      if (e.lineno) msg += ' (line ' + e.lineno + ':' + e.colno + ')';
+      errors.push(msg);
+      console.error('[OneOS Error]', msg);
+    });
+    window.addEventListener('unhandledrejection', function(e) {
+      errors.push('Promise: ' + (e.reason && e.reason.message ? e.reason.message : e.reason));
+    });
+
+    function showError(msg) {
+      var box = document.getElementById('loading-error');
+      var btn = document.getElementById('retry-btn');
+      var status = document.getElementById('loading-status');
+      if (box) { box.textContent = msg; box.classList.add('show'); }
+      if (btn) btn.classList.add('show');
+      if (status) status.textContent = '加载失败';
+      var dots = document.querySelector('#mobile-loading .dots');
+      if (dots) dots.style.display = 'none';
+    }
+
+    function updateStatus(msg) {
+      var status = document.getElementById('loading-status');
+      if (status) status.textContent = msg;
+    }
+
+    var attempts = 0;
+    var maxAttempts = 120;
+    var interval = setInterval(function() {
+      attempts++;
+
+      // 检查基础依赖
+      if (typeof React === 'undefined') {
+        clearInterval(interval);
+        showError('React 未加载，请检查 vendor/react.production.min.js');
+        return;
+      }
+      if (typeof ReactDOM === 'undefined') {
+        clearInterval(interval);
+        showError('ReactDOM 未加载，请检查 vendor/react-dom.production.min.js');
+        return;
+      }
+      if (typeof Babel === 'undefined') {
+        if (attempts < 10) { updateStatus('正在加载 Babel... (' + attempts + ')'); return; }
+        clearInterval(interval);
+        showError('Babel 未加载，请检查 vendor/babel.min.js');
+        return;
+      }
+
+      // 检查 App、MobileNav、KNOWLEDGE_BASE 是否已编译执行
+      if (typeof window.App === 'undefined' || typeof window.MobileNav === 'undefined' || typeof window.KNOWLEDGE_BASE === 'undefined') {
+        updateStatus('正在编译组件... ' + attempts + '/' + maxAttempts + (errors.length ? ' (' + errors.length + ' errors)' : ''));
+        if (attempts >= maxAttempts) {
+          clearInterval(interval);
+          var msg = '编译超时（' + (maxAttempts * 0.5) + '秒）\n\n';
+          msg += 'App已定义: ' + (typeof window.App !== 'undefined') + '\n';
+          msg += 'MobileNav已定义: ' + (typeof window.MobileNav !== 'undefined') + '\n';
+          msg += 'KNOWLEDGE_BASE已定义: ' + (typeof window.KNOWLEDGE_BASE !== 'undefined') + '\n';
+          msg += 'React: ' + (typeof React !== 'undefined') + '\n';
+          msg += 'Babel: ' + (typeof Babel !== 'undefined') + '\n';
+          if (errors.length > 0) {
+            msg += '\n错误列表 (' + errors.length + '):\n';
+            msg += errors.slice(0, 8).join('\n---\n');
+          }
+          showError(msg);
+        }
+        return;
+      }
+
+      // 所有组件已就绪，先初始化数据层，再执行渲染
+      clearInterval(interval);
+      (async function() {
+        try {
+          updateStatus('正在初始化数据层...');
+          // 初始化 IndexedDB 数据层（从数据库加载笔记，或导入种子数据）
+          if (window.DataAdapter) {
+            await window.DataAdapter.initDataLayer();
+            console.log('[OneOS] 数据层初始化完成，笔记数:', Object.keys(window.KNOWLEDGE_BASE?.notes || {}).length);
+          }
+
+          updateStatus('正在渲染界面...');
+          var root = ReactDOM.createRoot(document.getElementById('root'));
+          var tweak = { density: 'regular', fontScale: 1.0 };
+          root.render(
+            React.createElement(
+              React.Fragment, null,
+              React.createElement(window.App, { t: tweak, setTweak: function(){} }),
+              React.createElement(window.MobileNav)
+            )
+          );
+          setTimeout(function() {
+            var loading = document.getElementById('mobile-loading');
+            if (loading) loading.classList.add('hidden');
+          }, 300);
+        } catch(e) {
+          showError('初始化或渲染失败: ' + e.message + '\n' + (e.stack || ''));
+        }
+      })();
+    }, 500);
+  </script>
+
+  <!-- PWA: Service Worker 注册 -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then(function(registration) {
+            console.log('[PWA] Service Worker 注册成功:', registration.scope);
+            // 检查更新
+            registration.addEventListener('updatefound', function() {
+              console.log('[PWA] 发现新版本，正在更新...');
+            });
+          })
+          .catch(function(error) {
+            console.warn('[PWA] Service Worker 注册失败:', error);
+          });
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#8B5CF6" />
+  <meta name="description" content="OneOS - 每个人的第二大脑和数字生存操作系统" />
+  <!-- PWA配置 -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="OneOS" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <!-- 安全配置 -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https: wss:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" />
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <title>OneOS · 个人知识操作系统</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%238B5CF6'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>O</text></svg>" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #root { height: 100%; width: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow: hidden;
+      background: #F8F9FC;
+    }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+    a { text-decoration: none; color: inherit; }
+    input, textarea { font-family: inherit; }
+
+    /* 启动加载动画 */
+    #app-loading {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #F8F9FC 0%, #EEF2FF 50%, #F0FDFA 100%);
+      z-index: 9999;
+      transition: opacity 0.5s ease;
+    }
+    #app-loading.hidden { opacity: 0; pointer-events: none; }
+    .loading-logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #8B5CF6, #00CEC9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 12px 32px rgba(139, 92, 246, 0.3);
+      animation: loading-pulse 2s ease-in-out infinite;
+    }
+    .loading-logo span {
+      font-size: 36px;
+      font-weight: 800;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    .loading-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: #2D3436;
+      margin-bottom: 8px;
+    }
+    .loading-subtext {
+      font-size: 13px;
+      color: #636E72;
+    }
+    .loading-bar {
+      width: 200px;
+      height: 4px;
+      background: rgba(139, 92, 246, 0.15);
+      border-radius: 2px;
+      margin-top: 20px;
+      overflow: hidden;
+    }
+    .loading-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #8B5CF6, #00CEC9);
+      border-radius: 2px;
+      animation: loading-progress 1.5s ease-in-out infinite;
+    }
+    @keyframes loading-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    @keyframes loading-progress {
+      0% { width: 0%; margin-left: 0%; }
+      50% { width: 70%; margin-left: 15%; }
+      100% { width: 0%; margin-left: 100%; }
+    }
+
+    /* 滚动条 */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+
+    /* 选中文本 */
+    ::selection { background: rgba(139, 92, 246, 0.2); color: #2D3436; }
+  </style>
+</head>
+<body>
+  <div id="app-loading">
+    <div class="loading-logo"><span>O</span></div>
+    <div class="loading-text">OneOS</div>
+    <div class="loading-subtext">正在加载你的知识操作系统...</div>
+    <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+  </div>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+  <script>
+    // 应用加载完成后隐藏启动画面
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const loading = document.getElementById('app-loading');
+        if (loading) {
+          loading.classList.add('hidden');
+          setTimeout(() => loading.remove(), 500);
+        }
+      }, 300);
+    });
+  </script>
+</body>
+</html>

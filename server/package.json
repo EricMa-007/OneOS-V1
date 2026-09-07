@@ -1,0 +1,32 @@
+{
+  "name": "oneos-server",
+  "version": "1.0.0",
+  "description": "OneOS 服务器端 - 用户账户、好友关系、慢连接消息、极小圈子",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "init-db": "node src/models/database.js",
+    "prod": "cross-env NODE_ENV=production node src/index.js",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop oneos-server",
+    "pm2:restart": "pm2 restart oneos-server",
+    "pm2:logs": "pm2 logs oneos-server",
+    "pm2:monit": "pm2 monit",
+    "pm2:save": "pm2 save",
+    "backup": "node scripts/backup.js",
+    "backup:schedule": "node scripts/backup.js --schedule",
+    "setup": "npm install && npm run init-db"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "better-sqlite3": "^9.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "qrcode": "^1.5.3",
+    "uuid": "^9.0.0",
+    "dotenv": "^16.3.1"
+  }
+}

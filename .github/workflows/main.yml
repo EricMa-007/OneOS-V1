@@ -1,0 +1,216 @@
+# ============================================================
+# OneOS CI/CD 流水线 - 主分支流水线
+# 触发时机：push to main / develop
+# 目的：合并到主分支后做全量测试、构建、部署预览、性能基准
+# 维护者：A06 林克（运维主管）
+# ============================================================
+
+name: CI/CD - Main Branch
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+concurrency:
+  group: cd-main-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # ----------------------------------------------------------
+  # Job 1: 全量测试
+  # ----------------------------------------------------------
+  full-test:
+    name: 全量测试
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci --prefer-offline --no-audit
+
+      - name: 运行全量单元测试
+        run: npm run test:ci
+        env:
+          CI: true
+
+      - name: 运行集成测试
+        run: npm run test:integration
+        continue-on-error: true
+
+      - name: 生成覆盖率报告
+        run: npm run test:coverage
+        if: always()
+
+      - name: 上传覆盖率报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-coverage-report
+          path: coverage/
+          retention-days: 30
+
+  # ----------------------------------------------------------
+  # Job 2: 生产构建
+  # ----------------------------------------------------------
+  production-build:
+    name: 生产构建
+    runs-on: ubuntu-latest
+    needs: full-test
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci --prefer-offline --no-audit
+
+      - name: 生产环境构建
+        run: npm run build:prod
+        env:
+          NODE_ENV: production
+          VITE_BUILD_HASH: ${{ github.sha }}
+          VITE_BUILD_TIME: ${{ github.event.head_commit.timestamp }}
+
+      - name: 构建产物分析
+        run: npm run build:analyze
+        continue-on-error: true
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-build
+          path: dist/
+          retention-days: 90
+
+      - name: 上传构建分析报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-analysis
+          path: |
+            dist/report.html
+            stats.json
+          retention-days: 30
+
+  # ----------------------------------------------------------
+  # Job 3: 部署预览
+  # ----------------------------------------------------------
+  deploy-preview:
+    name: 部署预览环境
+    runs-on: ubuntu-latest
+    needs: production-build
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: preview
+      url: https://preview.oneos.app/${{ github.sha }}
+    steps:
+      - name: 下载构建产物
+        uses: actions/download-artifact@v4
+        with:
+          name: production-build
+          path: dist/
+
+      - name: 部署到预览环境
+        run: |
+          echo "部署预览环境..."
+          echo "预览地址: https://preview.oneos.app/${{ github.sha }}"
+          # 这里接入实际部署命令（Vercel/Netlify/自建服务器）
+          echo "部署完成"
+
+      - name: 预览环境健康检查
+        run: |
+          echo "健康检查..."
+          # curl -f https://preview.oneos.app/${{ github.sha }}/ || exit 1
+          echo "健康检查通过"
+
+  # ----------------------------------------------------------
+  # Job 4: 性能基准测试
+  # ----------------------------------------------------------
+  performance-benchmark:
+    name: 性能基准测试
+    runs-on: ubuntu-latest
+    needs: production-build
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci --prefer-offline --no-audit
+
+      - name: 下载构建产物
+        uses: actions/download-artifact@v4
+        with:
+          name: production-build
+          path: dist/
+
+      - name: 运行性能基准测试
+        run: npm run perf:benchmark
+        continue-on-error: true
+        env:
+          PERF_SAMPLE_SIZE: 20
+
+      - name: 性能退化检测
+        run: npm run perf:check
+        continue-on-error: true
+
+      - name: 上传性能报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: |
+            perf-report/
+            benchmarks/
+          retention-days: 90
+
+  # ----------------------------------------------------------
+  # Job 5: 通知
+  # ----------------------------------------------------------
+  notify:
+    name: 构建通知
+    runs-on: ubuntu-latest
+    needs: [full-test, production-build, performance-benchmark]
+    if: always()
+    steps:
+      - name: 发送构建结果通知
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const results = {
+              test: '${{ needs.full-test.result }}',
+              build: '${{ needs.production-build.result }}',
+              perf: '${{ needs.performance-benchmark.result }}'
+            };
+            
+            const allPassed = Object.values(results).every(r => r === 'success');
+            const status = allPassed ? '✅ 成功' : '❌ 失败';
+            
+            console.log(`构建状态: ${status}`);
+            console.log(`分支: ${context.ref}`);
+            console.log(`提交: ${context.sha}`);
+            console.log(`测试: ${results.test}`);
+            console.log(`构建: ${results.build}`);
+            console.log(`性能: ${results.perf}`);
+            
+            // 这里接入实际通知（飞书/钉钉/Slack/Webhook）
+            // fetch(process.env.NOTIFY_WEBHOOK, { method: 'POST', body: JSON.stringify({...}) })

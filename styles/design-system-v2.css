@@ -1,0 +1,352 @@
+/* ============================================
+   OneOS Core Design System V2
+   统一设计令牌 + 基础组件样式
+   风格：软UI / 现代iOS / 年轻化
+   ============================================ */
+
+/* ---------- 设计令牌 ---------- */
+:root {
+  /* 颜色系统 */
+  --color-primary: #6C5CE7;
+  --color-primary-light: #A29BFE;
+  --color-primary-dark: #5B4FE0;
+  --color-primary-soft: rgba(108, 92, 231, 0.1);
+
+  --color-secondary: #00CEC9;
+  --color-secondary-light: #81ECEC;
+  --color-secondary-dark: #00B5B0;
+
+  --color-accent-pink: #FD79A8;
+  --color-accent-orange: #FDCB6E;
+  --color-accent-green: #00B894;
+  --color-accent-red: #FF7675;
+  --color-accent-purple: #A29BFE;
+  --color-accent-blue: #74B9FF;
+
+  /* 中性色 */
+  --color-bg: #F8F9FE;
+  --color-bg-gradient: linear-gradient(160deg, #EEF2FF 0%, #F0F7FF 35%, #FFF5F7 70%, #F0FCF8 100%);
+  --color-card: #FFFFFF;
+  --color-card-hover: #FAFBFF;
+
+  --color-text-primary: #2D3436;
+  --color-text-secondary: #636E72;
+  --color-text-tertiary: #B2BEC3;
+  --color-text-inverse: #FFFFFF;
+
+  --color-border: rgba(45, 52, 54, 0.06);
+  --color-border-strong: rgba(45, 52, 54, 0.1);
+
+  /* 字体系统 */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+  --font-mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
+  --font-rounded: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+
+  /* 字号系统 */
+  --fs-xs: 11px;
+  --fs-sm: 13px;
+  --fs-base: 15px;
+  --fs-md: 17px;
+  --fs-lg: 20px;
+  --fs-xl: 24px;
+  --fs-2xl: 28px;
+  --fs-3xl: 32px;
+
+  /* 字重 */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-extrabold: 800;
+
+  /* 间距系统（8px基准） */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+
+  /* 圆角系统 */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 999px;
+
+  /* 阴影系统 */
+  --shadow-xs: 0 1px 3px rgba(45, 52, 54, 0.04);
+  --shadow-sm: 0 2px 8px rgba(45, 52, 54, 0.06);
+  --shadow-md: 0 4px 16px rgba(45, 52, 54, 0.08);
+  --shadow-lg: 0 8px 24px rgba(45, 52, 54, 0.1);
+  --shadow-xl: 0 16px 40px rgba(45, 52, 54, 0.12);
+
+  --shadow-primary: 0 4px 16px rgba(108, 92, 231, 0.25);
+  --shadow-primary-lg: 0 8px 24px rgba(108, 92, 231, 0.35);
+  --shadow-pink: 0 4px 16px rgba(253, 121, 168, 0.25);
+  --shadow-green: 0 4px 16px rgba(0, 184, 148, 0.25);
+  --shadow-orange: 0 4px 16px rgba(253, 203, 110, 0.3);
+
+  /* 动效 */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ---------- 全局基础样式 ---------- */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  color: var(--color-text-primary);
+  background: var(--color-bg-gradient);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------- 统一卡片样式 ---------- */
+/* 覆盖所有半透明玻璃拟态卡片为纯白卡片 */
+#root [style*="backdrop-filter"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+#root [style*="background: rgba(255, 255, 255, 0.72)"],
+#root [style*="background: rgba(255,255,255,0.72)"],
+#root [style*="background: rgba(255, 255, 255, 0.6)"],
+#root [style*="background: rgba(255,255,255,0.6)"],
+#root [style*="background: rgba(255, 255, 255, 0.5)"],
+#root [style*="background: rgba(255,255,255,0.5)"] {
+  background: var(--color-card) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* ---------- 统一按钮样式 ---------- */
+#root button {
+  font-family: var(--font-sans);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+#root button:active {
+  transform: scale(0.97);
+}
+
+/* ---------- 统一文字样式 ---------- */
+#root h1, #root h2, #root h3, #root h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.3px;
+}
+
+#root p, #root span, #root div {
+  font-family: var(--font-sans);
+}
+
+/* ---------- 隐藏3D装饰元素 ---------- */
+#root .deco-3d {
+  display: none !important;
+}
+
+/* ---------- 渐变文字改为纯色 ---------- */
+#root [style*="WebkitBackgroundClip: text"],
+#root [style*="-webkit-background-clip: text"] {
+  -webkit-text-fill-color: var(--color-text-primary) !important;
+  background: none !important;
+}
+
+/* ---------- 统一输入框 ---------- */
+#root input, #root textarea, #root select {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  padding: var(--sp-3) var(--sp-4);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+#root input:focus, #root textarea:focus, #root select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+/* ---------- 统一标签 ---------- */
+#root [style*="border-radius: 999px"][style*="padding: 2px"],
+#root [style*="border-radius: 999px"][style*="padding: 3px"],
+#root [style*="border-radius: 999px"][style*="padding: 4px"] {
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-xs);
+}
+
+/* ---------- 动画 ---------- */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- 滚动条美化 ---------- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(45, 52, 54, 0.15);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(45, 52, 54, 0.25);
+}
+
+/* ============================================
+   移动端专项优化（P2/P3）
+   ============================================ */
+@media (max-width: 768px) {
+  /* P2-1: 按钮最小触摸区 44px */
+  #root button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* 小图标按钮例外 - 保持原始尺寸，防止椭圆变形 */
+  #root button[style*="width: 26px"],
+  #root button[style*="width:26px"],
+  #root button[style*="width: 28px"],
+  #root button[style*="width:28px"],
+  #root button[style*="width: 32px"],
+  #root button[style*="width:32px"],
+  #root button[style*="width: 36px"],
+  #root button[style*="width:36px"] {
+    min-height: unset !important;
+    min-width: unset !important;
+    width: var(--icon-btn-size, 36px) !important;
+    height: var(--icon-btn-size, 36px) !important;
+  }
+
+  /* 日历色系选择器按钮 - 保持圆形 */
+  #root button[style*="borderRadius: '50%'"],
+  #root button[style*="border-radius: 50%"] {
+    min-height: unset !important;
+    min-width: unset !important;
+    aspect-ratio: 1 / 1 !important;
+  }
+
+  /* 日历热力图格子 - 保持正方形 */
+  #root [style*="borderRadius: 3"][style*="width:"][style*="height:"] {
+    aspect-ratio: 1 / 1 !important;
+  }
+
+  /* P2-2: 移动端禁用 hover 动画（避免卡顿和无意义效果） */
+  #root * {
+    hover: none !important;
+  }
+
+  /* P2-4: 空状态优化 */
+  #root [style*="padding: 60px 20px"],
+  #root [style*="padding: '60px 20px'"] {
+    padding: 48px 24px !important;
+  }
+
+  /* P3-2: 信息层次 - 大数字更突出 */
+  #root [style*="fontSize: 22"],
+  #root [style*="fontSize: 28"],
+  #root [style*="fontSize: 32"],
+  #root [style*="fontSize: 36"] {
+    font-weight: 700 !important;
+    letter-spacing: -0.5px !important;
+  }
+
+  /* 标签文字更轻 */
+  #root [style*="fontSize: 10"],
+  #root [style*="fontSize: 11"] {
+    font-weight: 500 !important;
+    letter-spacing: 0.2px !important;
+  }
+
+  /* 防止文字竖排 */
+  #root * {
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* P1: 图标放大 - 侧边栏导航图标 */
+  #root [style*="width: 28px"][style*="height: 28px"],
+  #root [style*="width:28px"][style*="height:28px"] {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  #root [style*="width: 28px"][style*="height: 28px"] svg,
+  #root [style*="width:28px"][style*="height:28px"] svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  /* P1: 图标放大 - 统计卡片图标 */
+  #root [style*="width: 40px"][style*="height: 40px"],
+  #root [style*="width:40px"][style*="height:40px"] {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  /* P1: 底部导航图标放大 */
+  #root nav[style*="position: fixed"][style*="bottom: 0"] svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
+  #root nav[style*="position: fixed"][style*="bottom: 0"] [style*="width: 32px"],
+  #root nav[style*="position: fixed"][style*="bottom: 0"] [style*="width:32px"] {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  /* 横向滚动区域优化 */
+  #root [style*="overflowX: auto"],
+  #root [style*="overflow-x: auto"] {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  #root [style*="overflowX: auto"]::-webkit-scrollbar,
+  #root [style*="overflow-x: auto"]::-webkit-scrollbar {
+    display: none;
+  }
+}

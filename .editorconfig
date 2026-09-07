@@ -1,0 +1,36 @@
+# EditorConfig 配置
+# 维护者：A06 林克（运维主管）
+# 作用：统一不同编辑器/IDE的代码风格
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 100
+
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = 120
+
+[*.{json,yml,yaml}]
+indent_size = 2
+
+[*.{js,jsx,ts,tsx}]
+indent_size = 2
+
+[*.css]
+indent_size = 2
+
+[*.html]
+indent_size = 2
+
+[Makefile]
+indent_style = tab
+
+[*.sh]
+indent_size = 4

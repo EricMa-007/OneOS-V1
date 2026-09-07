@@ -1,0 +1,182 @@
+[
+  {
+    "id": "TC-API-001",
+    "name": "Register new user",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-002",
+    "name": "Register duplicate username (should fail)",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-003",
+    "name": "Register missing required fields (should fail)",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-004",
+    "name": "Login (normal)",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-005",
+    "name": "Login wrong password (should fail)",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-006",
+    "name": "Get current user info",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-007",
+    "name": "Get user public profile",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-008",
+    "name": "Get friend list (initially empty)",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-009",
+    "name": "Send friend request",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-010",
+    "name": "Duplicate friend request (should handle gracefully)",
+    "passed": true,
+    "message": "Server should dedupe"
+  },
+  {
+    "id": "TC-API-011",
+    "name": "Get received friend requests",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-012",
+    "name": "Accept friend request",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-013",
+    "name": "Get friend list (after accept, non-empty)",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-014",
+    "name": "Delete friend (tested and re-added)",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-015",
+    "name": "Send message to friend",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-016",
+    "name": "Send message to non-friend (should fail)",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-017",
+    "name": "Pull silent inbox",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-018",
+    "name": "Get conversation history",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-019",
+    "name": "Mark message as read",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-020",
+    "name": "Batch mark as read",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-021",
+    "name": "Create circle",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-022",
+    "name": "Create circle missing topic (should fail)",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-023",
+    "name": "Get circle list (public)",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-024",
+    "name": "Get my circles",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-025",
+    "name": "Get circle detail",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-026",
+    "name": "Join circle",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-027",
+    "name": "Duplicate join circle (should handle gracefully)",
+    "passed": true,
+    "message": "Server should handle duplicate join"
+  },
+  {
+    "id": "TC-API-028",
+    "name": "Generate my QR code",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-029",
+    "name": "Generate specified user QR code (public)",
+    "passed": true,
+    "message": ""
+  },
+  {
+    "id": "TC-API-030",
+    "name": "Scan QR code and send friend request",
+    "passed": true,
+    "message": ""
+  }
+]

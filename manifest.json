@@ -1,0 +1,79 @@
+{
+  "name": "OneOS - 灵魂级个人操作系统",
+  "short_name": "OneOS",
+  "description": "OneOS 是一个灵魂级个人操作系统，整合知识管理、AI助手、社交、语音交互等功能，服务于人的主体性。",
+  "start_url": "./mobile.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fafafa",
+  "theme_color": "#7C6FF0",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "categories": ["productivity", "education", "utilities"],
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icons/icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "新建笔记",
+      "short_name": "笔记",
+      "description": "快速新建一篇笔记",
+      "url": "./mobile.html?action=new-note",
+      "icons": [{ "src": "assets/icons/note.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "AI对话",
+      "short_name": "AI",
+      "description": "打开AI助手对话",
+      "url": "./mobile.html?action=ai-chat",
+      "icons": [{ "src": "assets/icons/ai.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "知识图谱",
+      "short_name": "图谱",
+      "description": "查看知识图谱",
+      "url": "./mobile.html?action=graph",
+      "icons": [{ "src": "assets/icons/graph.png", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "assets/screenshots/mobile-dashboard.png",
+      "sizes": "1242x2688",
+      "type": "image/png",
+      "platform": "mobile",
+      "label": "仪表盘"
+    },
+    {
+      "src": "assets/screenshots/mobile-editor.png",
+      "sizes": "1242x2688",
+      "type": "image/png",
+      "platform": "mobile",
+      "label": "笔记编辑器"
+    }
+  ],
+  "prefer_related_applications": false,
+  "features": [
+    "Cross Platform",
+    "Offline Capable",
+    "Installable"
+  ]
+}

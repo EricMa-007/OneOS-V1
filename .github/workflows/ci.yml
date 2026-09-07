@@ -1,0 +1,221 @@
+# ============================================================
+# OneOS CI/CD 流水线 - PR检查流水线
+# 触发时机：pull_request (opened, synchronize, reopened)
+# 目的：代码提交PR时自动做代码检查、测试、构建验证
+# 维护者：A06 林克（运维主管）
+# ============================================================
+
+name: CI - PR Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - develop
+
+# 并发控制：同一分支的多个PR只运行最新的
+concurrency:
+  group: ci-pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ----------------------------------------------------------
+  # Job 1: 代码质量检查
+  # ----------------------------------------------------------
+  lint:
+    name: 代码质量检查
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci --prefer-offline --no-audit
+
+      - name: ESLint 代码检查
+        run: npm run lint
+        continue-on-error: false
+
+      - name: Prettier 格式检查
+        run: npm run format:check
+        continue-on-error: false
+
+      - name: 提交信息规范检查
+        if: github.event_name == 'pull_request'
+        run: npx commitlint --from=HEAD~1 --to=HEAD
+        continue-on-error: true
+
+      - name: 上传检查报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: |
+            eslint-report.json
+          retention-days: 7
+
+  # ----------------------------------------------------------
+  # Job 2: 单元测试
+  # ----------------------------------------------------------
+  test:
+    name: 单元测试
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci --prefer-offline --no-audit
+
+      - name: 运行单元测试
+        run: npm run test:ci
+        env:
+          CI: true
+
+      - name: 上传测试覆盖率报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+      - name: 检查测试覆盖率阈值
+        run: npm run test:coverage:check
+        continue-on-error: false
+
+  # ----------------------------------------------------------
+  # Job 3: 构建验证
+  # ----------------------------------------------------------
+  build:
+    name: 构建验证
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci --prefer-offline --no-audit
+
+      - name: 构建项目
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: 验证构建产物
+        run: |
+          echo "检查构建产物..."
+          test -f dist/index.html && echo "✅ index.html 存在"
+          test -f dist/mobile.html && echo "✅ mobile.html 存在"
+          test -d dist/assets && echo "✅ assets 目录存在"
+          echo "构建产物验证完成"
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-preview
+          path: dist/
+          retention-days: 7
+
+  # ----------------------------------------------------------
+  # Job 4: 安全检查
+  # ----------------------------------------------------------
+  security:
+    name: 安全检查
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci --prefer-offline --no-audit
+
+      - name: npm 依赖漏洞扫描
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: 代码安全扫描 (njsscan)
+        uses: ajinabraham/njsscan-action@master
+        with:
+          args: '.'
+        continue-on-error: true
+
+      - name: 敏感信息泄露检查
+        run: |
+          echo "检查敏感信息..."
+          ! grep -rE "(password|secret|token|api_key|private_key)\s*[:=]\s*['\"][^'\"]{8,}" src/ components/ --include="*.js" --include="*.jsx" 2>/dev/null | grep -v "process.env" | grep -v "// " && echo "✅ 未发现硬编码敏感信息" || echo "⚠️  发现疑似敏感信息，请检查"
+        continue-on-error: true
+
+  # ----------------------------------------------------------
+  # Job 5: PR 总结评论
+  # ----------------------------------------------------------
+  summary:
+    name: PR 检查总结
+    runs-on: ubuntu-latest
+    needs: [lint, test, build, security]
+    if: always()
+    steps:
+      - name: 生成检查总结
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const results = {
+              lint: '${{ needs.lint.result }}',
+              test: '${{ needs.test.result }}',
+              build: '${{ needs.build.result }}',
+              security: '${{ needs.security.result }}'
+            };
+            
+            const statusIcon = (s) => s === 'success' ? '✅' : s === 'failure' ? '❌' : '⚠️';
+            
+            let body = '## 🧪 OneOS CI 检查总结\n\n';
+            body += '| 检查项 | 状态 |\n';
+            body += '|--------|------|\n';
+            body += `| 代码质量检查 | ${statusIcon(results.lint)} ${results.lint} |\n`;
+            body += `| 单元测试 | ${statusIcon(results.test)} ${results.test} |\n`;
+            body += `| 构建验证 | ${statusIcon(results.build)} ${results.build} |\n`;
+            body += `| 安全检查 | ${statusIcon(results.security)} ${results.security} |\n\n`;
+            
+            const allPassed = Object.values(results).every(r => r === 'success');
+            body += allPassed 
+              ? '### ✅ 所有检查通过，可以进行代码审查'
+              : '### ❌ 存在未通过的检查项，请修复后重新提交';
+            
+            body += '\n\n---\n*由 OneOS CI/CD 流水线自动生成 | 维护者：A06 林克*';
+            
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });

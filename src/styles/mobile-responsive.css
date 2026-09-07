@@ -1,0 +1,848 @@
+/**
+ * OneOS 移动端深度适配样式
+ * 针对触摸设备、手势操作、小屏幕优化
+ */
+
+/* ============================================
+   移动端基础适配
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* 全局触摸优化 */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* 输入框允许选择 */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  /* 防止iOS输入框自动缩放 */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+
+  /* 平滑滚动 */
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 安全区域适配（刘海屏） */
+  :root {
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-left: env(safe-area-inset-left, 0px);
+    --safe-area-right: env(safe-area-inset-right, 0px);
+  }
+
+  /* ============================================
+     布局适配
+     ============================================ */
+
+  /* 主容器 */
+  .app-container {
+    padding-top: var(--safe-area-top);
+    padding-bottom: var(--safe-area-bottom);
+    padding-left: var(--safe-area-left);
+    padding-right: var(--safe-area-right);
+  }
+
+  /* 侧边栏 - 移动端改为抽屉式 */
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 85vw;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    z-index: 999;
+  }
+
+  .sidebar-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* 主内容区 */
+  .main-content {
+    margin-left: 0;
+    padding: 16px;
+    padding-bottom: calc(80px + var(--safe-area-bottom));
+  }
+
+  /* 顶栏 */
+  .topbar {
+    height: 56px;
+    padding: 0 16px;
+    padding-top: var(--safe-area-top);
+  }
+
+  .topbar-title {
+    font-size: 18px;
+  }
+
+  /* ============================================
+     底部导航栏
+     ============================================ */
+
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(64px + var(--safe-area-bottom));
+    padding-bottom: var(--safe-area-bottom);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 100;
+  }
+
+  .bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 0;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 44px; /* 最小触摸区域 */
+  }
+
+  .bottom-nav-item:active {
+    transform: scale(0.92);
+    opacity: 0.7;
+  }
+
+  .bottom-nav-item.active {
+    color: var(--color-primary-500);
+  }
+
+  .bottom-nav-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .bottom-nav-label {
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  /* ============================================
+     卡片适配
+     ============================================ */
+
+  .card {
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .card-header {
+    padding: 16px;
+    padding-bottom: 12px;
+  }
+
+  .card-title {
+    font-size: 16px;
+  }
+
+  /* ============================================
+     按钮适配
+     ============================================ */
+
+  .btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px 20px;
+    font-size: 15px;
+    border-radius: 12px;
+  }
+
+  .btn-sm {
+    min-height: 36px;
+    padding: 6px 14px;
+    font-size: 13px;
+  }
+
+  .btn-lg {
+    min-height: 52px;
+    padding: 14px 28px;
+    font-size: 16px;
+  }
+
+  .btn:active {
+    transform: scale(0.96);
+    opacity: 0.8;
+  }
+
+  /* ============================================
+     表单适配
+     ============================================ */
+
+  .input, .textarea, .select {
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+
+  .textarea {
+    min-height: 100px;
+    padding: 12px 14px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-label {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  /* ============================================
+     列表适配
+     ============================================ */
+
+  .list-item {
+    padding: 14px 16px;
+    min-height: 56px;
+  }
+
+  .list-item:active {
+    background: var(--color-neutral-50);
+  }
+
+  .list-item-title {
+    font-size: 15px;
+  }
+
+  .list-item-subtitle {
+    font-size: 13px;
+  }
+
+  /* ============================================
+     网格适配
+     ============================================ */
+
+  .grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  /* ============================================
+     模态框/弹窗适配
+     ============================================ */
+
+  .modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 20px 20px 0 0;
+    margin: 0;
+    animation: slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .modal-header {
+    padding: 16px 20px;
+    padding-top: calc(16px + var(--safe-area-top));
+  }
+
+  .modal-body {
+    padding: 16px 20px;
+    padding-bottom: calc(20px + var(--safe-area-bottom));
+  }
+
+  /* ============================================
+     抽屉适配
+     ============================================ */
+
+  .drawer {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 85vw;
+    max-width: 320px;
+    background: #fff;
+    z-index: 1001;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .drawer-left {
+    left: 0;
+    transform: translateX(-100%);
+  }
+
+  .drawer-right {
+    right: 0;
+    transform: translateX(100%);
+  }
+
+  .drawer.open {
+    transform: translateX(0);
+  }
+
+  /* ============================================
+     标签页适配
+     ============================================ */
+
+  .tabs {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 4px;
+    padding: 0 16px;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    flex-shrink: 0;
+    padding: 10px 16px;
+    font-size: 14px;
+    white-space: nowrap;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ============================================
+     空状态适配
+     ============================================ */
+
+  .empty-state {
+    padding: 48px 24px;
+    text-align: center;
+  }
+
+  .empty-state-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+  }
+
+  .empty-state-title {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+
+  .empty-state-description {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  /* ============================================
+     加载状态适配
+     ============================================ */
+
+  .skeleton {
+    border-radius: 8px;
+    animation: shimmer 1.5s infinite;
+  }
+
+  .loading-spinner {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* ============================================
+     通知/Toast适配
+     ============================================ */
+
+  .toast-container {
+    position: fixed;
+    top: calc(16px + var(--safe-area-top));
+    left: 16px;
+    right: 16px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .toast {
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    animation: toast-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ============================================
+     编辑器适配
+     ============================================ */
+
+  .editor-container {
+    font-size: 16px;
+    line-height: 1.8;
+  }
+
+  .editor-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .editor-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .editor-toolbar-btn {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .editor-content {
+    padding: 16px;
+    min-height: 60vh;
+  }
+
+  /* ============================================
+     知识图谱适配
+     ============================================ */
+
+  .graph-container {
+    touch-action: none;
+  }
+
+  .graph-node {
+    cursor: pointer;
+  }
+
+  .graph-node:active {
+    transform: scale(1.1);
+  }
+
+  /* ============================================
+     AI对话适配
+     ============================================ */
+
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px;
+    padding-bottom: 80px;
+  }
+
+  .chat-message {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .chat-message.user {
+    margin-left: auto;
+    border-bottom-right-radius: 4px;
+  }
+
+  .chat-message.assistant {
+    margin-right: auto;
+    border-bottom-left-radius: 4px;
+  }
+
+  .chat-input-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px 16px;
+    padding-bottom: calc(12px + var(--safe-area-bottom));
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+  }
+
+  .chat-input {
+    flex: 1;
+    min-height: 44px;
+    max-height: 120px;
+    padding: 10px 14px;
+    font-size: 16px;
+    border-radius: 20px;
+    resize: none;
+  }
+
+  .chat-send-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* ============================================
+     日历适配
+     ============================================ */
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+
+  .calendar-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    min-height: 40px;
+  }
+
+  .calendar-cell.today {
+    font-weight: 700;
+  }
+
+  .calendar-cell.selected {
+    border-radius: 50%;
+  }
+
+  /* ============================================
+     社交适配
+     ============================================ */
+
+  .social-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .social-avatar.lg {
+    width: 64px;
+    height: 64px;
+  }
+
+  .social-avatar.sm {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* ============================================
+     语音适配
+     ============================================ */
+
+  .voice-record-btn {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .voice-record-btn.recording {
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  .voice-waveform {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 40px;
+  }
+
+  .voice-waveform-bar {
+    width: 3px;
+    background: linear-gradient(to top, var(--color-primary-400), var(--color-primary-600));
+    border-radius: 2px;
+    animation: wave 1s ease-in-out infinite;
+  }
+
+  /* ============================================
+     搜索适配
+     ============================================ */
+
+  .search-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .search-input {
+    width: 100%;
+    height: 44px;
+    padding: 0 16px 0 44px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+
+  .search-result-item {
+    padding: 14px 16px;
+    min-height: 56px;
+  }
+
+  .search-result-item:active {
+    background: var(--color-neutral-50);
+  }
+
+  /* ============================================
+     设置适配
+     ============================================ */
+
+  .settings-section {
+    margin-bottom: 24px;
+  }
+
+  .settings-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    min-height: 56px;
+  }
+
+  .settings-item:active {
+    background: var(--color-neutral-50);
+  }
+
+  .settings-item-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+
+  /* ============================================
+     动画
+     ============================================ */
+
+  @keyframes slide-up {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes toast-in {
+    from {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
+    }
+    50% {
+      transform: scale(1.05);
+      box-shadow: 0 0 0 20px rgba(255, 107, 107, 0);
+    }
+  }
+
+  @keyframes wave {
+    0%, 100% {
+      height: 10px;
+    }
+    50% {
+      height: 30px;
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  /* ============================================
+     横屏适配
+     ============================================ */
+
+  @media (max-width: 768px) and (orientation: landscape) {
+    .bottom-nav {
+      height: calc(52px + var(--safe-area-bottom));
+    }
+
+    .bottom-nav-label {
+      display: none;
+    }
+
+    .bottom-nav-icon {
+      width: 28px;
+      height: 28px;
+    }
+
+    .main-content {
+      padding: 12px;
+      padding-bottom: calc(64px + var(--safe-area-bottom));
+    }
+
+    .card {
+      padding: 12px;
+    }
+  }
+
+  /* ============================================
+     平板适配
+     ============================================ */
+
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar {
+      width: 240px;
+    }
+
+    .main-content {
+      margin-left: 240px;
+      padding: 24px;
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid-4 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+}
+
+/* ============================================
+   高对比度模式
+   ============================================ */
+
+@media (prefers-contrast: high) {
+  .card {
+    border: 2px solid var(--color-neutral-300);
+  }
+
+  .btn {
+    border: 2px solid currentColor;
+  }
+}
+
+/* ============================================
+   减少动画模式
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================
+   深色模式
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .bottom-nav {
+    background: rgba(30, 30, 30, 0.95);
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .chat-input-container {
+    background: rgba(30, 30, 30, 0.95);
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .search-bar {
+    background: rgba(30, 30, 30, 0.95);
+  }
+
+  .modal-content,
+  .drawer {
+    background: #1e1e1e;
+  }
+}

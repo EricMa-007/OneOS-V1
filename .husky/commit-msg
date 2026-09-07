@@ -1,0 +1,28 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# OneOS commit-msg 钩子
+# 维护者：A03 史密斯（代码审查官）
+# 作用：验证提交信息是否符合规范
+
+echo "📝 验证提交信息规范..."
+
+npx commitlint --edit "$1"
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ 提交信息不符合规范"
+  echo ""
+  echo "正确格式: <type>(<scope>): <subject>"
+  echo ""
+  echo "示例:"
+  echo "  feat(editor): 添加Markdown实时预览"
+  echo "  fix(graph): 修复节点拖拽失效问题"
+  echo "  docs(readme): 更新安装说明"
+  echo ""
+  echo "可用类型: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
+  echo ""
+  exit 1
+fi
+
+echo "✅ 提交信息规范验证通过"

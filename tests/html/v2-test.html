@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OneOS V2 - 数据层测试</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+      background: linear-gradient(160deg, #F0F7F4 0%, #E0EFE8 40%, #D4E8E0 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #2D3748;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #7C6FF0, #4ECDC4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle { color: #5A6577; margin-bottom: 24px; font-size: 14px; }
+    .card {
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 16px rgba(45,55,72,0.06);
+      border: 1px solid rgba(255,255,255,0.9);
+    }
+    .card h2 { font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #2D3748; }
+    .btn {
+      display: inline-block;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin: 4px;
+    }
+    .btn-primary { background: linear-gradient(135deg, #9B8EF7, #7C6FF0); color: #fff; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(124,111,240,0.3); }
+    .btn-secondary { background: rgba(45,55,72,0.06); color: #2D3748; }
+    .btn-secondary:hover { background: rgba(45,55,72,0.1); }
+    .btn-danger { background: rgba(255,138,128,0.15); color: #E53E3E; }
+    .btn-danger:hover { background: rgba(255,138,128,0.25); }
+    .log {
+      background: #1a1a2e;
+      color: #a8e6cf;
+      padding: 16px;
+      border-radius: 12px;
+      font-family: 'JetBrains Mono', 'SF Mono', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .log .info { color: #88d8f7; }
+    .log .success { color: #a8e6cf; }
+    .log .error { color: #ff8b94; }
+    .log .warn { color: #ffd93d; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat {
+      background: rgba(255,255,255,0.7);
+      padding: 14px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .stat-value { font-size: 24px; font-weight: 700; color: #7C6FF0; }
+    .stat-label { font-size: 12px; color: #5A6577; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>OneOS V2 - 数据层测试</h1>
+    <p class="subtitle">IndexedDB 数据层封装 · 笔记数据操作 · 设置持久化 · 功能验证</p>
+
+    <!-- 状态统计 -->
+    <div class="stats" id="stats">
+      <div class="stat">
+        <div class="stat-value" id="stat-db">--</div>
+        <div class="stat-label">数据库状态</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="stat-notes">0</div>
+        <div class="stat-label">笔记数量</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="stat-words">0</div>
+        <div class="stat-label">总字数</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="stat-storage">--</div>
+        <div class="stat-label">存储使用</div>
+      </div>
+    </div>
+
+    <!-- 数据库操作 -->
+    <div class="card">
+      <h2>📦 数据库操作</h2>
+      <button class="btn btn-primary" onclick="testInitDB()">初始化数据库</button>
+      <button class="btn btn-secondary" onclick="testGetStatus()">获取状态</button>
+      <button class="btn btn-secondary" onclick="testExportDB()">导出全部数据</button>
+      <button class="btn btn-danger" onclick="testClearDB()">清空数据库</button>
+    </div>
+
+    <!-- 笔记操作 -->
+    <div class="card">
+      <h2>📝 笔记操作</h2>
+      <button class="btn btn-primary" onclick="testCreateNote()">创建测试笔记</button>
+      <button class="btn btn-primary" onclick="testCreateBatchNotes()">批量创建10篇</button>
+      <button class="btn btn-secondary" onclick="testGetAllNotes()">获取所有笔记</button>
+      <button class="btn btn-secondary" onclick="testSearchNotes()">搜索笔记</button>
+      <button class="btn btn-secondary" onclick="testGetNoteStats()">笔记统计</button>
+      <button class="btn btn-secondary" onclick="testExportNote()">导出笔记为MD</button>
+      <button class="btn btn-danger" onclick="testDeleteAllNotes()">删除所有笔记</button>
+    </div>
+
+    <!-- 设置操作 -->
+    <div class="card">
+      <h2>⚙️ 设置操作</h2>
+      <button class="btn btn-primary" onclick="testLoadSettings()">加载设置</button>
+      <button class="btn btn-primary" onclick="testUpdateSetting()">更新主题色</button>
+      <button class="btn btn-secondary" onclick="testGetSetting()">读取设置值</button>
+      <button class="btn btn-secondary" onclick="testExportSettings()">导出设置</button>
+      <button class="btn btn-danger" onclick="testResetSettings()">重置设置</button>
+    </div>
+
+    <!-- 运行全部测试 -->
+    <div class="card">
+      <h2>🚀 自动化测试</h2>
+      <button class="btn btn-primary" onclick="runAllTests()" style="font-size:15px; padding:12px 24px;">运行全部测试</button>
+    </div>
+
+    <!-- 日志输出 -->
+    <div class="card">
+      <h2>📋 测试日志</h2>
+      <div class="log" id="log">等待测试开始...</div>
+    </div>
+  </div>
+
+  <!-- 数据层模块 -->
+  <script src="src/db/database.js"></script>
+  <script src="src/db/notes.js"></script>
+  <script src="src/db/settings.js"></script>
+
+  <script>
+    // 日志工具
+    function log(msg, type = 'info') {
+      const el = document.getElementById('log');
+      const time = new Date().toLocaleTimeString();
+      const prefix = { info: 'ℹ️', success: '✅', error: '❌', warn: '⚠️' }[type] || '';
+      el.innerHTML += `\n<span class="${type}">[${time}] ${prefix} ${msg}</span>`;
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function clearLog() {
+      document.getElementById('log').innerHTML = '';
+    }
+
+    // 更新统计
+    async function updateStats() {
+      try {
+        if (window.OneOSDB) {
+          const status = await OneOSDB.getStatus();
+          document.getElementById('stat-db').textContent = '已连接';
+          document.getElementById('stat-notes').textContent = status.recordCounts.notes || 0;
+        }
+        if (window.NotesDB) {
+          const stats = await NotesDB.getNoteStats();
+          document.getElementById('stat-words').textContent = stats.totalWords.toLocaleString();
+        }
+        if (window.SettingsDB) {
+          const info = SettingsDB.getStorageInfo();
+          document.getElementById('stat-storage').textContent = info.percentage + '%';
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // ============================================
+    // 数据库测试
+    // ============================================
+
+    async function testInitDB() {
+      log('开始初始化数据库...');
+      try {
+        await OneOSDB.openDatabase();
+        const status = await OneOSDB.getStatus();
+        log(`数据库初始化成功，版本: ${status.version}，数据仓库: ${status.stores.join(', ')}`, 'success');
+        updateStats();
+      } catch (e) {
+        log(`数据库初始化失败: ${e.message}`, 'error');
+      }
+    }
+
+    async function testGetStatus() {
+      try {
+        const status = await OneOSDB.getStatus();
+        log(`数据库状态: 版本=${status.version}, 总记录=${status.totalRecords}`);
+        Object.entries(status.recordCounts).forEach(([store, count]) => {
+          log(`  ${store}: ${count} 条记录`);
+        });
+      } catch (e) {
+        log(`获取状态失败: ${e.message}`, 'error');
+      }
+    }
+
+    async function testExportDB() {
+      try {
+        const data = await OneOSDB.exportAll();
+        log(`导出数据成功，共 ${Object.keys(data.data).length} 个数据仓库`);
+        console.log('导出数据:', data);
+      } catch (e) {
+        log(`导出失败: ${e.message}`, 'error');
+      }
+    }
+
+    async function testClearDB() {
+      if (!confirm('确定要清空整个数据库吗？此操作不可恢复！')) return;
+      try {
+        await OneOSDB.deleteDatabase();
+        log('数据库已清空', 'warn');
+        updateStats();
+      } catch (e) {
+        log(`清空失败: ${e.message}`, 'error');
+      }
+    }
+
+    // ============================================
+    // 笔记测试
+    // ============================================
+
+    async function testCreateNote() {
+      try {
+        const note = await NotesDB.createNote({
+          title: '测试笔记 - ' + new Date().toLocaleTimeString(),
+          content: '# 测试笔记\n\n这是一篇用于测试IndexedDB数据层的笔记。\n\n## 功能验证\n\n- 创建笔记 ✅\n- 保存到IndexedDB ✅\n- 字数统计 ✅',
+          folder: '测试',
+          tags: ['测试', 'IndexedDB'],
+        });
+        log(`创建笔记成功: ${note.id}，字数: ${note.wordCount}`, 'success');
+        updateStats();
+      } catch (e) {
+        log(`创建笔记失败: ${e.message}`, 'error');
+      }
+    }
+
+    async function testCreateBatchNotes() {
+      log('开始批量创建10篇笔记...');
+      const topics = ['哲学', '技术', '产品', '设计', '科学', '艺术', '历史', '心理', '经济', '文学'];
+      for (let i = 0; i < 10; i++) {
+        await NotesDB.createNote({
+          title: `${topics[i]}思考 - 第${i+1}篇`,
+          content: `# ${topics[i]}思考\n\n这是关于${topics[i]}的深度思考笔记。\n\n## 核心观点\n\n${topics[i]}是一个值得深入探讨的领域，涉及多个维度的思考。`,
+          folder: topics[i],
+          tags: [topics[i], '批量测试'],
+          elevationLevel: i % 4,
+        });
+      }
+      log('批量创建10篇笔记成功', 'success');
+      updateStats();
+    }
+
+    async function testGetAllNotes() {
+      try {
+        const notes = await NotesDB.getAllNotes({ limit: 5 });
+        log(`获取笔记成功，共 ${notes.length} 篇（显示前5篇）:`);
+        notes.forEach((n, i) => {
+          log(`  ${i+1}. ${n.title} (${n.folder}, ${n.wordCount}字)`);
+        });
+      } catch (e) {
+        log(`获取笔记失败: ${e.message}`, 'error');
+      }
+    }
+
+    async function testSearchNotes() {
+      try {
+        const results = await NotesDB.searchNotes('思考');
+        log(`搜索"思考"找到 ${results.length} 篇笔记:`);
+        results.slice(0, 5).forEach((r, i) => {
+          log(`  ${i+1}. ${r.item.title} (匹配度: ${r.score})`);
+        });
+      } catch (e) {
+        log(`搜索失败: ${e.message}`, 'error');
+      }
+    }
+
+    async function testGetNoteStats() {
+      try {
+        const stats = await NotesDB.getNoteStats();
+        log(`笔记统计: 总数=${stats.total}, 活跃=${stats.active}, 总字数=${stats.totalWords}`);
+        log(`  层级分布: 原文=${stats.levelCounts[0]}, 卡片=${stats.levelCounts[1]}, 摘要=${stats.levelCounts[2]}, 元知识=${stats.levelCounts[3]}`);
+        log(`  文件夹数: ${stats.folders.length}, 标签数: ${stats.tagCounts.length}`);
+      } catch (e) {
+        log(`统计失败: ${e.message}`, 'error');
+      }
+    }
+
+    async function testExportNote() {
+      try {
+        const notes = await NotesDB.getAllNotes({ limit: 1 });
+        if (notes.length === 0) {
+          log('没有笔记可导出', 'warn');
+          return;
+        }
+        const md = await NotesDB.exportNoteToMarkdown(notes[0].id);
+        log(`导出笔记成功 (${md.length} 字符):`);
+        log(md.slice(0, 200) + '...');
+      } catch (e) {
+        log(`导出失败: ${e.message}`, 'error');
+      }
+    }
+
+    async function testDeleteAllNotes() {
+      if (!confirm('确定要删除所有笔记吗？')) return;
+      try {
+        const notes = await NotesDB.getAllNotes({ includeArchived: true });
+        const ids = notes.map(n => n.id);
+        await NotesDB.deleteNotes(ids);
+        log(`删除 ${ids.length} 篇笔记成功`, 'warn');
+        updateStats();
+      } catch (e) {
+        log(`删除失败: ${e.message}`, 'error');
+      }
+    }
+
+    // ============================================
+    // 设置测试
+    // ============================================
+
+    function testLoadSettings() {
+      try {
+        const settings = SettingsDB.loadSettings();
+        log(`设置加载成功，主题: ${settings.appearance.theme}, 强调色: ${settings.appearance.accentColor}`);
+        log(`  AI模型: ${settings.ai.model}, 温度: ${settings.ai.temperature}`);
+        log(`  静默收件箱: ${settings.social.silentInbox}`);
+      } catch (e) {
+        log(`加载设置失败: ${e.message}`, 'error');
+      }
+    }
+
+    async function testUpdateSetting() {
+      try {
+        const colors = ['#7C6FF0', '#4ECDC4', '#FFA07A', '#6BCB77', '#F48FB1'];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        await SettingsDB.setSetting('appearance.accentColor', color);
+        log(`更新强调色为: ${color}`, 'success');
+      } catch (e) {
+        log(`更新设置失败: ${e.message}`, 'error');
+      }
+    }
+
+    function testGetSetting() {
+      try {
+        const theme = SettingsDB.getSetting('appearance.theme');
+        const model = SettingsDB.getSetting('ai.model');
+        log(`读取设置: theme=${theme}, model=${model}`);
+      } catch (e) {
+        log(`读取设置失败: ${e.message}`, 'error');
+      }
+    }
+
+    async function testExportSettings() {
+      try {
+        const json = await SettingsDB.exportSettings();
+        log(`导出设置成功 (${json.length} 字符)`);
+        console.log('设置JSON:', JSON.parse(json));
+      } catch (e) {
+        log(`导出设置失败: ${e.message}`, 'error');
+      }
+    }
+
+    async function testResetSettings() {
+      if (!confirm('确定要重置所有设置吗？')) return;
+      try {
+        await SettingsDB.resetSettings();
+        log('设置已重置为默认值', 'warn');
+      } catch (e) {
+        log(`重置失败: ${e.message}`, 'error');
+      }
+    }
+
+    // ============================================
+    // 全部测试
+    // ============================================
+
+    async function runAllTests() {
+      clearLog();
+      log('========== OneOS V2 数据层全量测试开始 ==========', 'info');
+
+      // 1. 数据库初始化
+      log('\n--- 1. 数据库初始化 ---');
+      await testInitDB();
+
+      // 2. 创建笔记
+      log('\n--- 2. 创建笔记 ---');
+      await testCreateNote();
+      await testCreateBatchNotes();
+
+      // 3. 查询笔记
+      log('\n--- 3. 查询笔记 ---');
+      await testGetAllNotes();
+      await testSearchNotes();
+
+      // 4. 统计
+      log('\n--- 4. 笔记统计 ---');
+      await testGetNoteStats();
+
+      // 5. 导出
+      log('\n--- 5. 导出功能 ---');
+      await testExportNote();
+      await testExportDB();
+      await testExportSettings();
+
+      // 6. 设置
+      log('\n--- 6. 设置操作 ---');
+      testLoadSettings();
+      await testUpdateSetting();
+      testGetSetting();
+
+      // 7. 数据库状态
+      log('\n--- 7. 最终状态 ---');
+      await testGetStatus();
+
+      log('\n========== 全部测试完成 ==========', 'success');
+      updateStats();
+    }
+
+    // 页面加载后自动初始化
+    window.addEventListener('load', async () => {
+      log('页面加载完成，数据层模块已注入');
+      log('IndexedDB 可用: ' + OneOSDB.isAvailable());
+      if (OneOSDB.isAvailable()) {
+        await testInitDB();
+      }
+    });
+  </script>
+</body>
+</html>

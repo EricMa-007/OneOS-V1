@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OneOS V2 - 自动化测试 Agent</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+      background: linear-gradient(160deg, #EEF2FF 0%, #F0F7FF 35%, #FFF5F7 70%, #F0FCF8 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #2D3436;
+    }
+    .container { max-width: 1100px; margin: 0 auto; }
+    h1 {
+      font-size: 28px; font-weight: 700; margin-bottom: 4px;
+      background: linear-gradient(135deg, #7C6FF0, #4ECDC4);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .subtitle { color: #5A6577; margin-bottom: 20px; font-size: 14px; }
+
+    /* 概览卡片 */
+    .overview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.9);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      box-shadow: 0 2px 12px rgba(45,55,72,0.06);
+      border: 1px solid rgba(255,255,255,0.9);
+    }
+    .stat-value { font-size: 28px; font-weight: 800; }
+    .stat-label { font-size: 12px; color: #5A6577; margin-top: 4px; }
+    .pass { color: #27AE60; }
+    .fail { color: #E74C3C; }
+    .pending { color: #F39C12; }
+    .info { color: #3498DB; }
+
+    /* 测试套件 */
+    .suite {
+      background: rgba(255,255,255,0.9);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 12px rgba(45,55,72,0.06);
+    }
+    .suite-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .suite-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .suite-badge {
+      padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    }
+    .badge-pass { background: rgba(39,174,96,0.12); color: #27AE60; }
+    .badge-fail { background: rgba(231,76,60,0.12); color: #E74C3C; }
+    .badge-pending { background: rgba(243,156,18,0.12); color: #F39C12; }
+    .badge-running { background: rgba(52,152,219,0.12); color: #3498DB; }
+
+    /* 测试用例 */
+    .test-case {
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .test-pass { background: rgba(39,174,96,0.06); border-left: 3px solid #27AE60; }
+    .test-fail { background: rgba(231,76,60,0.06); border-left: 3px solid #E74C3C; }
+    .test-pending { background: rgba(243,156,18,0.06); border-left: 3px solid #F39C12; }
+    .test-running { background: rgba(52,152,219,0.06); border-left: 3px solid #3498DB; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+    .test-icon { width: 18px; text-align: center; flex-shrink: 0; font-size: 14px; }
+    .test-name { flex: 1; font-weight: 500; }
+    .test-duration { font-size: 11px; color: #5A6577; font-family: monospace; flex-shrink: 0; }
+    .test-error {
+      margin-top: 6px; padding: 8px 12px; background: rgba(231,76,60,0.08);
+      border-radius: 6px; font-size: 11px; color: #C0392B; font-family: monospace;
+      white-space: pre-wrap; word-break: break-all;
+    }
+
+    /* 日志 */
+    .log-section {
+      background: #1a1a2e; border-radius: 14px; padding: 16px; margin-top: 16px;
+    }
+    .log-title { color: #a8e6cf; font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+    .log {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1.7;
+      max-height: 300px; overflow-y: auto; color: #88d8f7;
+    }
+    .log .success { color: #a8e6cf; }
+    .log .error { color: #ff8b94; }
+    .log .warn { color: #ffd93d; }
+    .log .info { color: #88d8f7; }
+
+    /* 控制按钮 */
+    .controls {
+      display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .btn {
+      padding: 10px 20px; border: none; border-radius: 10px; font-size: 13px;
+      font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-primary { background: linear-gradient(135deg, #9B8EF7, #7C6FF0); color: #fff; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(124,111,240,0.3); }
+    .btn-secondary { background: rgba(45,55,72,0.06); color: #2D3748; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* 进度条 */
+    .progress-bar {
+      width: 100%; height: 6px; background: rgba(45,55,72,0.08); border-radius: 3px;
+      overflow: hidden; margin-bottom: 16px;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, #9B8EF7, #4ECDC4);
+      border-radius: 3px; transition: width 0.3s ease; width: 0%;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🤖 OneOS V2 自动化测试 Agent</h1>
+    <p class="subtitle">类人测试 Agent · 全量功能验证 · 数据层 + AI服务 + 集成测试</p>
+
+    <!-- 概览 -->
+    <div class="overview">
+      <div class="stat-card">
+        <div class="stat-value info" id="total-tests">--</div>
+        <div class="stat-label">总用例数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value pass" id="passed-tests">--</div>
+        <div class="stat-label">通过</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value fail" id="failed-tests">--</div>
+        <div class="stat-label">失败</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value pending" id="pending-tests">--</div>
+        <div class="stat-label">待执行</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value info" id="pass-rate">--</div>
+        <div class="stat-label">通过率</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value info" id="total-duration">--</div>
+        <div class="stat-label">总耗时</div>
+      </div>
+    </div>
+
+    <!-- 进度条 -->
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+    <!-- 控制按钮 -->
+    <div class="controls">
+      <button class="btn btn-primary" id="run-all-btn" onclick="runAllTests()">▶ 运行全部测试</button>
+      <button class="btn btn-secondary" onclick="runSuite('db-core')">📦 仅测数据层核心</button>
+      <button class="btn btn-secondary" onclick="runSuite('notes')">📝 仅测笔记模块</button>
+      <button class="btn btn-secondary" onclick="runSuite('settings')">⚙️ 仅测设置模块</button>
+      <button class="btn btn-secondary" onclick="runSuite('ai')">🤖 仅测AI服务</button>
+      <button class="btn btn-secondary" onclick="runSuite('integration')">🔗 仅测集成</button>
+      <button class="btn btn-secondary" onclick="clearResults()">🗑 清空结果</button>
+    </div>
+
+    <!-- 测试套件容器 -->
+    <div id="suites-container"></div>
+
+    <!-- 日志 -->
+    <div class="log-section">
+      <div class="log-title">📋 测试执行日志</div>
+      <div class="log" id="log">等待测试开始...</div>
+    </div>
+  </div>
+
+  <!-- 引入被测模块 -->
+  <script src="src/db/database.js"></script>
+  <script src="src/db/notes.js"></script>
+  <script src="src/db/settings.js"></script>
+  <script src="src/data-adapter.js"></script>
+  <script src="src/ai/ollama-service.js"></script>
+
+  <script>
+    // ============================================
+    // 测试框架
+    // ============================================
+    const testSuites = [];
+    let results = { total: 0, passed: 0, failed: 0, pending: 0, duration: 0 };
+
+    function log(msg, type = 'info') {
+      const el = document.getElementById('log');
+      const time = new Date().toLocaleTimeString();
+      const prefix = { info: 'ℹ️', success: '✅', error: '❌', warn: '⚠️' }[type] || '';
+      el.innerHTML += `\n<span class="${type}">[${time}] ${prefix} ${msg}</span>`;
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function defineSuite(name, description, tests) {
+      testSuites.push({ name, description, tests, results: [] });
+    }
+
+    async function runTest(suiteName, test) {
+      const startTime = Date.now();
+      try {
+        await test.fn();
+        const duration = Date.now() - startTime;
+        return { name: test.name, status: 'pass', duration, error: null };
+      } catch (err) {
+        const duration = Date.now() - startTime;
+        return { name: test.name, status: 'fail', duration, error: err.message || String(err) };
+      }
+    }
+
+    async function runSuite(suiteName) {
+      const suite = testSuites.find(s => s.name === suiteName);
+      if (!suite) return;
+
+      log(`开始测试套件: ${suite.name} - ${suite.description}`, 'info');
+      updateSuiteBadge(suiteName, 'running', '运行中');
+
+      suite.results = [];
+      for (const test of suite.tests) {
+        updateTestCase(suiteName, test.name, 'running');
+        const result = await runTest(suiteName, test);
+        suite.results.push(result);
+        updateTestCase(suiteName, test.name, result.status, result.duration, result.error);
+        log(`  ${result.status === 'pass' ? '✅' : '❌'} ${test.name} (${result.duration}ms)`, result.status === 'pass' ? 'success' : 'error');
+        if (result.error) log(`     错误: ${result.error}`, 'error');
+        updateOverview();
+      }
+
+      const passed = suite.results.filter(r => r.status === 'pass').length;
+      const failed = suite.results.filter(r => r.status === 'fail').length;
+      const badge = failed === 0 ? 'pass' : 'fail';
+      const text = failed === 0 ? `全部通过 (${passed}/${suite.tests.length})` : `${failed} 失败 (${passed}/${suite.tests.length})`;
+      updateSuiteBadge(suiteName, badge, text);
+      log(`测试套件完成: ${suite.name} - ${text}`, failed === 0 ? 'success' : 'error');
+    }
+
+    async function runAllTests() {
+      document.getElementById('run-all-btn').disabled = true;
+      const totalStart = Date.now();
+      log('========== 自动化测试 Agent 启动 ==========', 'info');
+      log(`共 ${testSuites.length} 个测试套件，${testSuites.reduce((s, suite) => s + suite.tests.length, 0)} 个测试用例`, 'info');
+
+      for (const suite of testSuites) {
+        await runSuite(suite.name);
+      }
+
+      results.duration = Date.now() - totalStart;
+      updateOverview();
+      document.getElementById('run-all-btn').disabled = false;
+      log('========== 全部测试完成 ==========', 'success');
+      log(`总计: ${results.total} 用例, 通过 ${results.passed}, 失败 ${results.failed}, 耗时 ${results.duration}ms`, results.failed === 0 ? 'success' : 'warn');
+    }
+
+    function updateOverview() {
+      let total = 0, passed = 0, failed = 0, pending = 0;
+      for (const suite of testSuites) {
+        for (const test of suite.tests) {
+          total++;
+          const result = suite.results.find(r => r.name === test.name);
+          if (!result) pending++;
+          else if (result.status === 'pass') passed++;
+          else failed++;
+        }
+      }
+      results = { ...results, total, passed, failed, pending };
+      document.getElementById('total-tests').textContent = total;
+      document.getElementById('passed-tests').textContent = passed;
+      document.getElementById('failed-tests').textContent = failed;
+      document.getElementById('pending-tests').textContent = pending;
+      document.getElementById('pass-rate').textContent = total > 0 ? Math.round((passed / total) * 100) + '%' : '--';
+      document.getElementById('total-duration').textContent = results.duration > 0 ? results.duration + 'ms' : '--';
+      document.getElementById('progress-fill').style.width = total > 0 ? ((passed + failed) / total * 100) + '%' : '0%';
+    }
+
+    function renderSuites() {
+      const container = document.getElementById('suites-container');
+      container.innerHTML = '';
+      for (const suite of testSuites) {
+        const suiteEl = document.createElement('div');
+        suiteEl.className = 'suite';
+        suiteEl.id = `suite-${suite.name}`;
+        suiteEl.innerHTML = `
+          <div class="suite-header">
+            <div class="suite-title">
+              <span>${suite.name === 'db-core' ? '📦' : suite.name === 'notes' ? '📝' : suite.name === 'settings' ? '⚙️' : suite.name === 'ai' ? '🤖' : '🔗'}</span>
+              <span>${suite.description}</span>
+            </div>
+            <span class="suite-badge badge-pending" id="badge-${suite.name}">待执行 (${suite.tests.length})</span>
+          </div>
+          <div id="cases-${suite.name}">
+            ${suite.tests.map(t => `
+              <div class="test-case test-pending" id="case-${suite.name}-${t.name}">
+                <span class="test-icon">⏳</span>
+                <span class="test-name">${t.name}</span>
+                <span class="test-duration">--</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(suiteEl);
+      }
+    }
+
+    function updateSuiteBadge(suiteName, status, text) {
+      const badge = document.getElementById(`badge-${suiteName}`);
+      if (!badge) return;
+      badge.className = `suite-badge badge-${status}`;
+      badge.textContent = text;
+    }
+
+    function updateTestCase(suiteName, testName, status, duration, error) {
+      const el = document.getElementById(`case-${suiteName}-${testName}`);
+      if (!el) return;
+      const icons = { pass: '✅', fail: '❌', pending: '⏳', running: '🔄' };
+      el.className = `test-case test-${status}`;
+      el.querySelector('.test-icon').textContent = icons[status] || '⏳';
+      if (duration !== undefined) el.querySelector('.test-duration').textContent = duration + 'ms';
+      // 移除旧错误
+      const oldError = el.querySelector('.test-error');
+      if (oldError) oldError.remove();
+      if (error) {
+        const errorEl = document.createElement('div');
+        errorEl.className = 'test-error';
+        errorEl.textContent = error;
+        el.appendChild(errorEl);
+      }
+    }
+
+    function clearResults() {
+      for (const suite of testSuites) {
+        suite.results = [];
+        for (const test of suite.tests) {
+          updateTestCase(suite.name, test.name, 'pending');
+        }
+        updateSuiteBadge(suite.name, 'pending', `待执行 (${suite.tests.length})`);
+      }
+      results = { total: 0, passed: 0, failed: 0, pending: 0, duration: 0 };
+      updateOverview();
+      document.getElementById('log').innerHTML = '等待测试开始...';
+    }
+
+    // ============================================
+    // 测试用例定义
+    // ============================================
+
+    // --- 数据层核心测试 ---
+    defineSuite('db-core', 'IndexedDB 数据层核心', [
+      {
+        name: '数据库可用检测',
+        fn: async () => {
+          if (!window.OneOSDB) throw new Error('OneOSDB 未加载');
+          if (!OneOSDB.isAvailable()) throw new Error('IndexedDB 不可用');
+        }
+      },
+      {
+        name: '数据库打开',
+        fn: async () => {
+          await OneOSDB.openDatabase();
+          const db = await OneOSDB.getDB();
+          if (!db) throw new Error('数据库实例为空');
+        }
+      },
+      {
+        name: '获取数据库状态',
+        fn: async () => {
+          const status = await OneOSDB.getStatus();
+          if (!status.name || status.name !== 'OneOS') throw new Error('数据库名称错误');
+          if (!Array.isArray(status.stores)) throw new Error('数据仓库列表不是数组');
+          if (status.stores.length < 5) throw new Error('数据仓库数量不足');
+        }
+      },
+      {
+        name: '添加单条记录',
+        fn: async () => {
+          const testData = { id: 'test-add-1', name: '测试记录', value: 42 };
+          const key = await OneOSDB.add('settings', testData);
+          if (!key) throw new Error('添加记录未返回key');
+        }
+      },
+      {
+        name: '获取单条记录',
+        fn: async () => {
+          const record = await OneOSDB.get('settings', 'test-add-1');
+          if (!record) throw new Error('未获取到记录');
+          if (record.value !== 42) throw new Error('记录值不匹配');
+        }
+      },
+      {
+        name: '更新记录',
+        fn: async () => {
+          await OneOSDB.put('settings', { id: 'test-add-1', name: '更新后', value: 100 });
+          const record = await OneOSDB.get('settings', 'test-add-1');
+          if (record.value !== 100) throw new Error('更新后值不匹配');
+        }
+      },
+      {
+        name: '批量添加记录',
+        fn: async () => {
+          const items = [
+            { id: 'batch-1', key: 'b1', value: 1 },
+            { id: 'batch-2', key: 'b2', value: 2 },
+            { id: 'batch-3', key: 'b3', value: 3 },
+          ];
+          await OneOSDB.bulkPut('settings', items);
+          const count = await OneOSDB.count('settings');
+          if (count < 3) throw new Error('批量添加后数量不足');
+        }
+      },
+      {
+        name: '获取全部记录',
+        fn: async () => {
+          const all = await OneOSDB.getAll('settings');
+          if (!Array.isArray(all)) throw new Error('返回值不是数组');
+          if (all.length === 0) throw new Error('记录为空');
+        }
+      },
+      {
+        name: '按索引查询',
+        fn: async () => {
+          const results = await OneOSDB.getByIndex('settings', 'key', 'b1');
+          if (!Array.isArray(results)) throw new Error('返回值不是数组');
+        }
+      },
+      {
+        name: '记录计数',
+        fn: async () => {
+          const count = await OneOSDB.count('settings');
+          if (typeof count !== 'number') throw new Error('计数不是数字');
+          if (count < 0) throw new Error('计数为负数');
+        }
+      },
+      {
+        name: '删除单条记录',
+        fn: async () => {
+          await OneOSDB.remove('settings', 'test-add-1');
+          const record = await OneOSDB.get('settings', 'test-add-1');
+          if (record !== undefined) throw new Error('删除后记录仍存在');
+        }
+      },
+      {
+        name: '批量删除记录',
+        fn: async () => {
+          await OneOSDB.bulkRemove('settings', ['batch-1', 'batch-2', 'batch-3']);
+          const r1 = await OneOSDB.get('settings', 'batch-1');
+          if (r1 !== undefined) throw new Error('批量删除后记录仍存在');
+        }
+      },
+      {
+        name: '导出全部数据',
+        fn: async () => {
+          const data = await OneOSDB.exportAll();
+          if (!data.version) throw new Error('导出版本缺失');
+          if (!data.data) throw new Error('导出数据缺失');
+          if (typeof data.exportedAt !== 'string') throw new Error('导出时间格式错误');
+        }
+      },
+    ]);
+
+    // --- 笔记模块测试 ---
+    defineSuite('notes', '笔记数据操作模块', [
+      {
+        name: 'NotesDB 模块加载',
+        fn: async () => {
+          if (!window.NotesDB) throw new Error('NotesDB 未加载');
+          if (typeof NotesDB.createNote !== 'function') throw new Error('createNote 方法缺失');
+          if (typeof NotesDB.getNote !== 'function') throw new Error('getNote 方法缺失');
+        }
+      },
+      {
+        name: '创建笔记',
+        fn: async () => {
+          const note = await NotesDB.createNote({
+            title: '测试笔记',
+            content: '# 测试\n\n这是测试内容',
+            folder: '测试文件夹',
+            tags: ['测试', '自动化'],
+          });
+          if (!note.id) throw new Error('笔记ID缺失');
+          if (note.title !== '测试笔记') throw new Error('标题不匹配');
+          if (note.wordCount <= 0) throw new Error('字数统计错误');
+          window._testNoteId = note.id;
+        }
+      },
+      {
+        name: '获取笔记',
+        fn: async () => {
+          const note = await NotesDB.getNote(window._testNoteId);
+          if (!note) throw new Error('未获取到笔记');
+          if (note.title !== '测试笔记') throw new Error('笔记标题不匹配');
+        }
+      },
+      {
+        name: '更新笔记',
+        fn: async () => {
+          const updated = await NotesDB.updateNote(window._testNoteId, {
+            title: '更新后的笔记',
+            content: '# 更新后\n\n内容已更新',
+          });
+          if (updated.title !== '更新后的笔记') throw new Error('更新后标题不匹配');
+          if (updated.updatedAt <= updated.createdAt) throw new Error('更新时间未变化');
+        }
+      },
+      {
+        name: '获取所有笔记',
+        fn: async () => {
+          const notes = await NotesDB.getAllNotes();
+          if (!Array.isArray(notes)) throw new Error('返回值不是数组');
+          if (notes.length === 0) throw new Error('笔记列表为空');
+        }
+      },
+      {
+        name: '按文件夹获取笔记',
+        fn: async () => {
+          const notes = await NotesDB.getNotesByFolder('测试文件夹');
+          if (!Array.isArray(notes)) throw new Error('返回值不是数组');
+        }
+      },
+      {
+        name: '按标签获取笔记',
+        fn: async () => {
+          const notes = await NotesDB.getNotesByTag('测试');
+          if (!Array.isArray(notes)) throw new Error('返回值不是数组');
+        }
+      },
+      {
+        name: '搜索笔记',
+        fn: async () => {
+          const results = await NotesDB.searchNotes('更新');
+          if (!Array.isArray(results)) throw new Error('返回值不是数组');
+          if (results.length > 0 && typeof results[0].score !== 'number') throw new Error('匹配度不是数字');
+        }
+      },
+      {
+        name: '获取最近笔记',
+        fn: async () => {
+          const notes = await NotesDB.getRecentNotes(5);
+          if (!Array.isArray(notes)) throw new Error('返回值不是数组');
+          if (notes.length > 5) throw new Error('返回数量超过限制');
+        }
+      },
+      {
+        name: '笔记统计',
+        fn: async () => {
+          const stats = await NotesDB.getNoteStats();
+          if (typeof stats.total !== 'number') throw new Error('总数不是数字');
+          if (typeof stats.totalWords !== 'number') throw new Error('总字数不是数字');
+          if (!stats.levelCounts) throw new Error('层级统计缺失');
+          if (!stats.folders) throw new Error('文件夹统计缺失');
+        }
+      },
+      {
+        name: '导出笔记为Markdown',
+        fn: async () => {
+          const md = await NotesDB.exportNoteToMarkdown(window._testNoteId);
+          if (typeof md !== 'string') throw new Error('导出内容不是字符串');
+          if (!md.includes('---')) throw new Error('缺少Frontmatter');
+          if (!md.includes('更新后')) throw new Error('内容不包含笔记标题');
+        }
+      },
+      {
+        name: '从Markdown导入笔记',
+        fn: async () => {
+          const md = '---\ntitle: 导入测试\ntags: [导入,测试]\n---\n\n# 导入的笔记\n\n内容';
+          const note = await NotesDB.importNoteFromMarkdown(md);
+          if (!note.id) throw new Error('导入笔记ID缺失');
+          if (note.title !== '导入测试') throw new Error('导入标题不匹配');
+          window._importedNoteId = note.id;
+        }
+      },
+      {
+        name: '删除笔记',
+        fn: async () => {
+          await NotesDB.deleteNote(window._testNoteId);
+          const note = await NotesDB.getNote(window._testNoteId);
+          if (note !== undefined) throw new Error('删除后笔记仍存在');
+          if (window._importedNoteId) {
+            await NotesDB.deleteNote(window._importedNoteId);
+          }
+        }
+      },
+    ]);
+
+    // --- 设置模块测试 ---
+    defineSuite('settings', '设置与状态持久化模块', [
+      {
+        name: 'SettingsDB 模块加载',
+        fn: async () => {
+          if (!window.SettingsDB) throw new Error('SettingsDB 未加载');
+          if (typeof SettingsDB.getSetting !== 'function') throw new Error('getSetting 方法缺失');
+          if (typeof SettingsDB.setSetting !== 'function') throw new Error('setSetting 方法缺失');
+        }
+      },
+      {
+        name: '加载默认设置',
+        fn: async () => {
+          const settings = SettingsDB.loadSettings();
+          if (!settings.appearance) throw new Error('外观设置缺失');
+          if (!settings.editor) throw new Error('编辑器设置缺失');
+          if (!settings.ai) throw new Error('AI设置缺失');
+          if (!settings.social) throw new Error('社交设置缺失');
+        }
+      },
+      {
+        name: '读取设置值',
+        fn: async () => {
+          const theme = SettingsDB.getSetting('appearance.theme');
+          if (!theme) throw new Error('主题设置为空');
+          const model = SettingsDB.getSetting('ai.model');
+          if (!model) throw new Error('AI模型设置为空');
+        }
+      },
+      {
+        name: '更新设置值',
+        fn: async () => {
+          await SettingsDB.setSetting('appearance.theme', 'dark');
+          const theme = SettingsDB.getSetting('appearance.theme');
+          if (theme !== 'dark') throw new Error('更新后主题不匹配');
+          // 恢复
+          await SettingsDB.setSetting('appearance.theme', 'light');
+        }
+      },
+      {
+        name: '批量更新设置',
+        fn: async () => {
+          await SettingsDB.updateSettings({
+            'appearance.fontScale': 1.2,
+            'ai.temperature': 0.8,
+          });
+          const scale = SettingsDB.getSetting('appearance.fontScale');
+          const temp = SettingsDB.getSetting('ai.temperature');
+          if (scale !== 1.2) throw new Error('字体缩放不匹配');
+          if (temp !== 0.8) throw new Error('温度不匹配');
+        }
+      },
+      {
+        name: '重置设置',
+        fn: async () => {
+          await SettingsDB.resetSettings('appearance');
+          const scale = SettingsDB.getSetting('appearance.fontScale');
+          if (scale !== 1.0) throw new Error('重置后字体缩放不匹配');
+        }
+      },
+      {
+        name: '导出设置',
+        fn: async () => {
+          const json = await SettingsDB.exportSettings();
+          if (typeof json !== 'string') throw new Error('导出内容不是字符串');
+          const parsed = JSON.parse(json);
+          if (!parsed.appearance) throw new Error('导出内容缺少外观设置');
+        }
+      },
+      {
+        name: '保存应用状态',
+        fn: async () => {
+          await SettingsDB.saveState('test-ui-state', { sidebarOpen: true, activeTab: 'notes' });
+          const state = await SettingsDB.loadState('test-ui-state');
+          if (!state) throw new Error('未加载到状态');
+          if (state.sidebarOpen !== true) throw new Error('状态值不匹配');
+        }
+      },
+      {
+        name: '删除应用状态',
+        fn: async () => {
+          await SettingsDB.removeState('test-ui-state');
+          const state = await SettingsDB.loadState('test-ui-state', 'default');
+          if (state !== 'default') throw new Error('删除后状态仍存在');
+        }
+      },
+      {
+        name: '存储使用信息',
+        fn: async () => {
+          const info = SettingsDB.getStorageInfo();
+          if (typeof info.localStorageUsed !== 'number') throw new Error('使用量不是数字');
+          if (typeof info.percentage !== 'string') throw new Error('百分比不是字符串');
+        }
+      },
+    ]);
+
+    // --- AI服务测试 ---
+    defineSuite('ai', 'Ollama AI 服务模块', [
+      {
+        name: 'OllamaService 模块加载',
+        fn: async () => {
+          if (!window.OllamaService) throw new Error('OllamaService 未加载');
+          if (typeof OllamaService.checkConnection !== 'function') throw new Error('checkConnection 方法缺失');
+          if (typeof OllamaService.chatStream !== 'function') throw new Error('chatStream 方法缺失');
+        }
+      },
+      {
+        name: '获取配置',
+        fn: async () => {
+          const config = OllamaService.getConfig();
+          if (!config.baseUrl) throw new Error('baseUrl 缺失');
+          if (!config.model) throw new Error('model 缺失');
+          if (typeof config.temperature !== 'number') throw new Error('temperature 不是数字');
+        }
+      },
+      {
+        name: '更新配置',
+        fn: async () => {
+          OllamaService.configure({ temperature: 0.5, maxTokens: 1024 });
+          const config = OllamaService.getConfig();
+          if (config.temperature !== 0.5) throw new Error('温度更新不匹配');
+          if (config.maxTokens !== 1024) throw new Error('maxTokens更新不匹配');
+          // 恢复
+          OllamaService.configure({ temperature: 0.7, maxTokens: 2048 });
+        }
+      },
+      {
+        name: '连接检测（非阻塞）',
+        fn: async () => {
+          const result = await OllamaService.checkConnection();
+          if (typeof result.available !== 'boolean') throw new Error('available 不是布尔值');
+          if (typeof result.message !== 'string') throw new Error('message 不是字符串');
+          // 记录连接状态供后续测试使用
+          window._ollamaAvailable = result.available;
+          log(`Ollama 连接状态: ${result.available ? '可用' : '不可用'} - ${result.message}`, result.available ? 'success' : 'warn');
+        }
+      },
+      {
+        name: '获取模型列表（如可用）',
+        fn: async () => {
+          if (!window._ollamaAvailable) {
+            log('跳过：Ollama 不可用', 'warn');
+            return; // 跳过，不视为失败
+          }
+          const models = await OllamaService.listModels();
+          if (!Array.isArray(models)) throw new Error('模型列表不是数组');
+          log(`已安装模型数: ${models.length}`, 'info');
+        }
+      },
+      {
+        name: '非流式聊天（如可用）',
+        fn: async () => {
+          if (!window._ollamaAvailable) {
+            log('跳过：Ollama 不可用', 'warn');
+            return;
+          }
+          const result = await OllamaService.chat([
+            { role: 'user', content: '说"你好"两个字' }
+          ]);
+          if (!result.content) throw new Error('回复内容为空');
+          log(`AI回复: ${result.content.slice(0, 50)}...`, 'success');
+        }
+      },
+      {
+        name: '流式聊天（如可用）',
+        fn: async () => {
+          if (!window._ollamaAvailable) {
+            log('跳过：Ollama 不可用', 'warn');
+            return;
+          }
+          let tokenCount = 0;
+          const result = await OllamaService.chatStream(
+            [{ role: 'user', content: '数1到3' }],
+            (token) => { tokenCount++; }
+          );
+          if (!result.content) throw new Error('流式回复内容为空');
+          if (tokenCount === 0) throw new Error('未收到任何token');
+          log(`流式回复: ${tokenCount} tokens, 内容: ${result.content.slice(0, 50)}`, 'success');
+        }
+      },
+      {
+        name: '文本生成（如可用）',
+        fn: async () => {
+          if (!window._ollamaAvailable) {
+            log('跳过：Ollama 不可用', 'warn');
+            return;
+          }
+          const result = await OllamaService.generate('写一个字：好');
+          if (!result.response) throw new Error('生成内容为空');
+        }
+      },
+      {
+        name: '嵌入向量（如可用）',
+        fn: async () => {
+          if (!window._ollamaAvailable) {
+            log('跳过：Ollama 不可用', 'warn');
+            return;
+          }
+          const embedding = await OllamaService.embed('测试文本');
+          if (!Array.isArray(embedding)) throw new Error('嵌入向量不是数组');
+          if (embedding.length === 0) throw new Error('嵌入向量为空');
+          log(`嵌入向量维度: ${embedding.length}`, 'success');
+        }
+      },
+      {
+        name: '预设模板可用性',
+        fn: async () => {
+          if (!OllamaService.PROMPT_TEMPLATES) throw new Error('模板对象缺失');
+          const templates = Object.keys(OllamaService.PROMPT_TEMPLATES);
+          if (templates.length < 5) throw new Error('模板数量不足');
+          log(`可用模板: ${templates.join(', ')}`, 'info');
+        }
+      },
+    ]);
+
+    // --- 集成测试 ---
+    defineSuite('integration', '数据适配与集成测试', [
+      {
+        name: 'DataAdapter 模块加载',
+        fn: async () => {
+          if (!window.DataAdapter) throw new Error('DataAdapter 未加载');
+          if (typeof DataAdapter.initDataLayer !== 'function') throw new Error('initDataLayer 方法缺失');
+        }
+      },
+      {
+        name: '初始化数据层',
+        fn: async () => {
+          const result = await DataAdapter.initDataLayer();
+          if (!result) throw new Error('初始化返回为空');
+          if (!result.notes) throw new Error('KNOWLEDGE_BASE.notes 缺失');
+          log(`数据层初始化完成，笔记数: ${Object.keys(result.notes).length}`, 'success');
+        }
+      },
+      {
+        name: '创建笔记并同步到IndexedDB',
+        fn: async () => {
+          const note = await DataAdapter.createNote({
+            title: '集成测试笔记',
+            content: '# 集成测试\n\n这是通过DataAdapter创建的笔记',
+            folder: '集成测试',
+          });
+          if (!note.id) throw new Error('笔记ID缺失');
+          // 验证已同步到IndexedDB
+          const dbNote = await OneOSDB.get('notes', note.id);
+          if (!dbNote) throw new Error('笔记未同步到IndexedDB');
+          window._integrationNoteId = note.id;
+        }
+      },
+      {
+        name: '更新笔记内容并标记脏数据',
+        fn: async () => {
+          DataAdapter.updateNoteContent(window._integrationNoteId, '# 更新后\n\n内容已通过DataAdapter更新');
+          const status = DataAdapter.getStatus();
+          if (!status.isDirty && status.pendingCount === 0) {
+            // 可能已经自动保存了，等待一下
+            await new Promise(r => setTimeout(r, 2000));
+          }
+          log(`数据层状态: dirty=${status.isDirty}, pending=${status.pendingCount}`, 'info');
+        }
+      },
+      {
+        name: '刷新待保存数据',
+        fn: async () => {
+          await DataAdapter.flushPendingNotes();
+          const status = DataAdapter.getStatus();
+          if (status.isDirty) throw new Error('刷新后仍有脏数据');
+          if (status.pendingCount > 0) throw new Error('刷新后仍有待保存数据');
+        }
+      },
+      {
+        name: '从数据库重新加载',
+        fn: async () => {
+          await DataAdapter.loadFromDB();
+          const note = window.KNOWLEDGE_BASE.notes[window._integrationNoteId];
+          if (!note) throw new Error('重新加载后笔记不存在');
+        }
+      },
+      {
+        name: '删除集成测试笔记',
+        fn: async () => {
+          await DataAdapter.deleteNote(window._integrationNoteId);
+          const note = await OneOSDB.get('notes', window._integrationNoteId);
+          if (note !== undefined) throw new Error('删除后笔记仍存在于IndexedDB');
+        }
+      },
+      {
+        name: '数据格式双向转换',
+        fn: async () => {
+          const kbNote = { id: 'fmt-test', title: '格式测试', content: '内容', folder: '测试', tags: ['t1'] };
+          const dbNote = DataAdapter.kbNoteToDB(kbNote);
+          if (!dbNote.wordCount) throw new Error('转换后字数统计缺失');
+          const backToKB = DataAdapter.dbNoteToKB(dbNote);
+          if (backToKB.title !== '格式测试') throw new Error('双向转换后标题不匹配');
+        }
+      },
+      {
+        name: '数据库状态完整性',
+        fn: async () => {
+          const status = await OneOSDB.getStatus();
+          const requiredStores = ['notes', 'settings', 'conversations', 'messages', 'calendar'];
+          for (const store of requiredStores) {
+            if (!status.stores.includes(store)) throw new Error(`缺少数据仓库: ${store}`);
+          }
+          log(`数据库完整性验证通过，共 ${status.stores.length} 个数据仓库`, 'success');
+        }
+      },
+    ]);
+
+    // 初始化
+    renderSuites();
+    updateOverview();
+    log('测试 Agent 已就绪，共 ' + testSuites.length + ' 个测试套件', 'success');
+
+    // 自动运行全部测试
+    setTimeout(() => {
+      log('自动启动全量测试...', 'info');
+      runAllTests();
+    }, 500);
+  </script>
+</body>
+</html>

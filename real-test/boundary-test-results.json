@@ -1,0 +1,164 @@
+[
+  {
+    "id": "BC-001",
+    "name": "用户名太短（<3字符）应拒绝",
+    "passed": true,
+    "message": "状态码应为400，实际400"
+  },
+  {
+    "id": "BC-002",
+    "name": "密码太短（<6字符）应拒绝",
+    "passed": true,
+    "message": "状态码应为400，实际400"
+  },
+  {
+    "id": "BC-003",
+    "name": "空用户名应拒绝",
+    "passed": true,
+    "message": "状态码应为400，实际400"
+  },
+  {
+    "id": "BC-004",
+    "name": "空密码应拒绝",
+    "passed": true,
+    "message": "状态码应为400，实际400"
+  },
+  {
+    "id": "BC-005",
+    "name": "登录不存在的用户应拒绝",
+    "passed": true,
+    "message": "状态码应为401，实际401"
+  },
+  {
+    "id": "BC-006",
+    "name": "错误密码登录应拒绝",
+    "passed": true,
+    "message": "状态码应为401，实际401"
+  },
+  {
+    "id": "BC-007",
+    "name": "无Token访问需认证接口应拒绝",
+    "passed": true,
+    "message": "状态码应为401，实际401"
+  },
+  {
+    "id": "BC-008",
+    "name": "无效Token访问需认证接口应拒绝",
+    "passed": true,
+    "message": "状态码应为401，实际401"
+  },
+  {
+    "id": "BC-009",
+    "name": "格式错误的Token应拒绝",
+    "passed": true,
+    "message": "格式错误的Token应被拒绝"
+  },
+  {
+    "id": "BC-010",
+    "name": "获取不存在的用户资料应返回404",
+    "passed": true,
+    "message": "状态码应为404，实际404"
+  },
+  {
+    "id": "BC-011",
+    "name": "给自己发好友请求应拒绝",
+    "passed": true,
+    "message": "状态码应为400，实际400"
+  },
+  {
+    "id": "BC-012",
+    "name": "给不存在的用户发好友请求应返回404",
+    "passed": true,
+    "message": "状态码应为404，实际404"
+  },
+  {
+    "id": "BC-013",
+    "name": "接受不存在的好友请求应返回404",
+    "passed": true,
+    "message": "状态码应为404，实际404"
+  },
+  {
+    "id": "BC-014",
+    "name": "空toUserId发好友请求应拒绝",
+    "passed": true,
+    "message": "状态码应为400，实际400"
+  },
+  {
+    "id": "BC-015",
+    "name": "给非好友发消息应拒绝",
+    "passed": true,
+    "message": "状态码应为403，实际403"
+  },
+  {
+    "id": "BC-016",
+    "name": "空内容发消息应拒绝",
+    "passed": true,
+    "message": "状态码应为400，实际400"
+  },
+  {
+    "id": "BC-017",
+    "name": "标记不存在的消息已读应处理",
+    "passed": true,
+    "message": "应返回错误或404"
+  },
+  {
+    "id": "BC-018",
+    "name": "创建圈子缺少话题应拒绝",
+    "passed": true,
+    "message": "状态码应为400，实际400"
+  },
+  {
+    "id": "BC-019",
+    "name": "创建圈子缺少名称应拒绝",
+    "passed": true,
+    "message": "状态码应为400，实际400"
+  },
+  {
+    "id": "BC-020",
+    "name": "获取不存在的圈子详情应返回404",
+    "passed": true,
+    "message": "状态码应为404，实际404"
+  },
+  {
+    "id": "BC-021",
+    "name": "加入不存在的圈子应返回404",
+    "passed": true,
+    "message": "状态码应为404，实际404"
+  },
+  {
+    "id": "BC-022",
+    "name": "无Token生成二维码应拒绝",
+    "passed": true,
+    "message": "状态码应为401，实际401"
+  },
+  {
+    "id": "BC-023",
+    "name": "获取不存在用户的二维码应返回404",
+    "passed": true,
+    "message": "状态码应为404，实际404"
+  },
+  {
+    "id": "BC-024",
+    "name": "扫码无效的二维码数据应处理",
+    "passed": true,
+    "message": "应返回错误"
+  },
+  {
+    "id": "BC-025",
+    "name": "SQL注入用户名应被安全处理",
+    "passed": true,
+    "message": "参数化查询应防止SQL注入"
+  },
+  {
+    "id": "BC-026",
+    "name": "XSS显示名应被安全存储",
+    "passed": true,
+    "message": "应安全存储，前端转义输出"
+  },
+  {
+    "id": "BC-027",
+    "name": "超长用户名应被处理",
+    "passed": true,
+    "message": "超长用户名应被拒绝或截断"
+  }
+]

@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#c7e0f0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>UniSci - 全民科学计算平台</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="mock-data.js?v=20260827_1720"></script>
+<script src="api.js?v=20260827_1720"></script>
+<script src="api-integration.js?v=20260827_1720"></script>
+<script src="app-state.js?v=20260827_1720"></script>
+<script src="data-sync.js?v=20260827_1720"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg1:#b8d4e8;--bg2:#d4e8f5;--bg3:#e8f2fa;
+  --card:#fff;--card-shadow:0 8px 32px rgba(100,140,180,0.18),0 2px 8px rgba(100,140,180,0.08);
+  --primary:#ff6b4a;--primary2:#ff8c6b;--blue:#5ba3d9;--blue2:#7ec0e8;--blue-light:#e3f1fa;
+  --green:#5ccf8e;--green2:#7edda8;--purple:#9b7ed8;--purple2:#b8a0e8;
+  --yellow:#ffc857;--pink:#ff8fab;--teal:#5cc9c9;
+  --text:#2d3a4a;--text2:#5a6b7d;--text3:#8fa0b3;
+  --radius:24px;--radius-sm:16px;--radius-xs:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;
+  background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 40%,var(--bg3) 100%);
+  color:var(--text);min-height:100vh;overflow-x:hidden;padding-bottom:100px;position:relative}
+.lucide{width:20px;height:20px;stroke-width:2;flex-shrink:0;pointer-events:none!important}
+.icon-lg{width:26px;height:26px}.icon-xl{width:32px;height:32px}.icon-2xl{width:40px;height:40px}
+.icon-white{stroke:#fff}.icon-muted{stroke:var(--text3)}
+.icon-btn,.quick-item,.card,.nav-item,.ai-chip,.course-card,.new-task-card,.fab,.stat-card,.big-stat-card,.section-more,.list-item,.tab-item,.chip{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.icon-btn:active,.quick-item:active,.card:active,.nav-item:active,.ai-chip:active,.course-card:active,.new-task-card:active,.fab:active,.stat-card:active,.big-stat-card:active,.list-item:active,.tab-item:active{transform:scale(0.96)}
+
+.cloud{position:fixed;background:#fff;border-radius:50%;opacity:0.5;z-index:0;pointer-events:none;animation:float 8s ease-in-out infinite}
+.c1{width:80px;height:30px;top:60px;right:-20px}.c1::before{content:'';position:absolute;width:40px;height:40px;background:#fff;border-radius:50%;top:-20px;left:15px}
+.c2{width:60px;height:22px;top:200px;left:-15px;opacity:0.35;animation-delay:2s}.c2::before{content:'';position:absolute;width:30px;height:30px;background:#fff;border-radius:50%;top:-15px;left:10px}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+.header{position:relative;z-index:1;padding:20px 20px 8px}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:46px;height:46px;background:linear-gradient(135deg,var(--primary),var(--primary2));border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(255,107,74,0.35),inset 0 1px 0 rgba(255,255,255,0.3)}
+.logo-text{font-size:20px;font-weight:800;letter-spacing:-0.5px}
+.logo-sub{font-size:11px;color:var(--text3);font-weight:500;margin-top:1px}
+.header-actions{display:flex;gap:10px}
+.icon-btn{width:42px;height:42px;background:var(--card);border-radius:14px;border:none;display:flex;align-items:center;justify-content:center;box-shadow:var(--card-shadow);transition:all 0.2s;position:relative;color:var(--text2)}
+.badge-dot{position:absolute;top:9px;right:9px;width:8px;height:8px;background:var(--primary);border-radius:50%;border:2px solid var(--card)}
+
+/* 子页面头部*/
+.sub-header{display:flex;align-items:center;gap:12px;padding:16px 20px;position:relative;z-index:1}
+.back-btn{width:40px;height:40px;background:var(--card);border-radius:12px;border:none;display:flex;align-items:center;justify-content:center;box-shadow:var(--card-shadow);color:var(--text2)}
+.sub-title{font-size:18px;font-weight:800;flex:1}
+.sub-action{width:40px;height:40px;background:var(--card);border-radius:12px;border:none;display:flex;align-items:center;justify-content:center;box-shadow:var(--card-shadow);color:var(--text2)}
+
+.welcome-card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--card-shadow);position:relative;overflow:hidden;margin-bottom:16px}
+.welcome-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(91,163,217,0.15),transparent 70%);border-radius:50%}
+.welcome-row{display:flex;align-items:center;gap:14px;position:relative;z-index:1}
+.avatar{width:56px;height:56px;background:linear-gradient(135deg,var(--blue),var(--blue2));border-radius:18px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;font-weight:700;box-shadow:0 6px 16px rgba(91,163,217,0.3),inset 0 1px 0 rgba(255,255,255,0.3)}
+.avatar-purple{background:linear-gradient(135deg,var(--purple),var(--purple2));box-shadow:0 6px 16px rgba(155,126,216,0.3),inset 0 1px 0 rgba(255,255,255,0.3)}
+.welcome-text h2{font-size:20px;font-weight:800;margin-bottom:2px}
+.welcome-text p{font-size:13px;color:var(--text2)}
+.welcome-tag{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:4px 10px;background:var(--blue-light);color:var(--blue);border-radius:20px;font-size:11px;font-weight:600}
+.welcome-tag-purple{background:linear-gradient(135deg,#f0e8fa,#e4d6f5);color:var(--purple)}
+.welcome-tag-green{background:linear-gradient(135deg,#e0f5e8,#d0f0dc);color:var(--green)}
+
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat-card{background:var(--card);border-radius:var(--radius-sm);padding:14px 10px;text-align:center;box-shadow:var(--card-shadow);transition:transform 0.2s;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:3px 3px 0 0}
+.stat-card.blue::after{background:linear-gradient(90deg,var(--blue),var(--blue2))}
+.stat-card.green::after{background:linear-gradient(90deg,var(--green),var(--green2))}
+.stat-value{font-size:22px;font-weight:800;line-height:1.2}
+.stat-unit{font-size:12px;font-weight:600;color:var(--text3)}
+.stat-label{font-size:11px;color:var(--text3);margin-top:4px;font-weight:500}
+
+.container{padding:0 20px;position:relative;z-index:1}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;margin-top:4px}
+.section-title{font-size:17px;font-weight:800;display:flex;align-items:center;gap:10px}
+.section-title-icon{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.sti-orange{background:linear-gradient(135deg,#ffe0d6,#ffd0c0);color:var(--primary)}
+.sti-blue{background:linear-gradient(135deg,#d6ebf7,#c0e0f2);color:var(--blue)}
+.sti-green{background:linear-gradient(135deg,#d6f5e3,#c0edd4);color:var(--green)}
+.sti-purple{background:linear-gradient(135deg,#e8dff7,#d4c6f0);color:var(--purple)}
+.section-more{font-size:13px;color:var(--text3);font-weight:600;display:flex;align-items:center;gap:2px}
+
+.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.quick-item{display:flex;flex-direction:column;align-items:center;gap:8px}
+.quick-icon{width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;color:#fff;transition:all 0.2s;box-shadow:0 6px 14px rgba(100,140,180,0.15),inset 0 1px 0 rgba(255,255,255,0.4)}
+.quick-item:active .quick-icon{transform:scale(0.88) translateY(2px)}
+.qi-orange{background:linear-gradient(135deg,#ffb8a0,#ff9a7a)}
+.qi-blue{background:linear-gradient(135deg,#a0d0f0,#80bde0)}
+.qi-green{background:linear-gradient(135deg,#a0e8c0,#80dca8)}
+.qi-yellow{background:linear-gradient(135deg,#ffe0a0,#ffd070)}
+.qi-pink{background:linear-gradient(135deg,#ffb8c8,#ffa0b0)}
+.qi-teal{background:linear-gradient(135deg,#a0e0e0,#80d0d0)}
+.qi-purple{background:linear-gradient(135deg,#c8b0f0,#b090e8)}
+.qi-gray{background:linear-gradient(135deg,#d0d8e0,#b8c4d0)}
+.quick-label{font-size:11px;color:var(--text2);font-weight:600;text-align:center;line-height:1.3}
+
+.card{background:var(--card);border-radius:var(--radius);padding:18px;margin-bottom:12px;box-shadow:var(--card-shadow);transition:all 0.2s;position:relative;overflow:hidden}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.card-title{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.card-badge{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:700;display:flex;align-items:center;gap:5px}
+.badge-running{background:linear-gradient(135deg,#e0f5e8,#d0f0dc);color:#2a9d5a}
+.badge-queued{background:linear-gradient(135deg,#fff3d6,#ffe8b0);color:#c8880a}
+.badge-completed{background:linear-gradient(135deg,#e0ecf8,#d0e0f0);color:#3a7ab8}
+.badge-dot-icon{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.job-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:10px;font-weight:500;align-items:center}
+.job-meta span:first-child{display:flex;align-items:center;gap:5px}
+.progress-track{height:10px;background:#eef3f8;border-radius:5px;overflow:hidden;position:relative}
+.progress-fill{height:100%;border-radius:5px;position:relative;transition:width 0.5s}
+.progress-fill::after{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,0.4),transparent);border-radius:5px 5px 0 0}
+.pf-orange{background:linear-gradient(90deg,var(--primary),var(--primary2))}
+.pf-blue{background:linear-gradient(90deg,var(--blue),var(--blue2))}
+.pf-green{background:linear-gradient(90deg,var(--green),var(--green2))}
+.pf-purple{background:linear-gradient(90deg,var(--purple),var(--purple2))}
+
+.big-stat-card{background:linear-gradient(135deg,var(--card) 0%,#f8fbfe 100%);border-radius:var(--radius);padding:20px;margin-bottom:12px;box-shadow:var(--card-shadow);position:relative;overflow:hidden}
+.big-stat-card::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;background:radial-gradient(circle,rgba(255,107,74,0.1),transparent 70%);border-radius:50%}
+.big-stat-row{display:flex;align-items:flex-end;gap:8px;margin-bottom:8px;position:relative;z-index:1}
+.big-stat-number{font-size:42px;font-weight:900;line-height:1;letter-spacing:-2px}
+.big-stat-unit{font-size:16px;font-weight:700;color:var(--text3);padding-bottom:6px}
+.big-stat-label{font-size:13px;color:var(--text2);font-weight:600;position:relative;z-index:1;display:flex;align-items:center;gap:6px}
+.big-stat-bar{height:8px;background:#eef3f8;border-radius:4px;margin-top:12px;overflow:hidden}
+.big-stat-bar-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:4px}
+
+.ai-card{background:linear-gradient(135deg,#fff5f0 0%,#fff 60%);border-radius:var(--radius);padding:20px;margin-bottom:12px;box-shadow:var(--card-shadow);position:relative;overflow:hidden;border:1px solid rgba(255,107,74,0.1)}
+.ai-card::before{content:'';position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(255,107,74,0.15),transparent 70%);border-radius:50%}
+.ai-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;position:relative;z-index:1}
+.ai-avatar{width:48px;height:48px;background:linear-gradient(135deg,var(--primary),var(--primary2));border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 6px 16px rgba(255,107,74,0.3),inset 0 1px 0 rgba(255,255,255,0.3)}
+.ai-name{font-size:16px;font-weight:800}
+.ai-status{font-size:11px;color:var(--green);font-weight:600;display:flex;align-items:center;gap:5px;margin-top:2px}
+.ai-chips{display:flex;flex-wrap:wrap;gap:8px;position:relative;z-index:1}
+.ai-chip{font-size:12px;padding:8px 14px;background:#fff;border-radius:14px;color:var(--text2);font-weight:600;box-shadow:0 2px 8px rgba(100,140,180,0.08);border:1px solid #eef3f8;transition:all 0.2s;display:flex;align-items:center;gap:6px}
+
+.course-card{display:flex;gap:14px;align-items:center}
+.course-thumb{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;box-shadow:0 4px 12px rgba(100,140,180,0.15),inset 0 1px 0 rgba(255,255,255,0.3)}
+.ct-orange{background:linear-gradient(135deg,#ffd0b8,#ffb896)}
+.ct-blue{background:linear-gradient(135deg,#b8dcf0,#9ac8e8)}
+.ct-green{background:linear-gradient(135deg,#b8e8d0,#9adcb8)}
+.ct-purple{background:linear-gradient(135deg,#d0c0f0,#b8a0e8)}
+.ct-teal{background:linear-gradient(135deg,#b0e0e0,#90d0d0)}
+.course-info{flex:1;min-width:0}
+.course-name{font-size:14px;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.course-meta{font-size:12px;color:var(--text3);font-weight:500;display:flex;align-items:center;gap:6px}
+.course-progress-bar{height:6px;background:#eef3f8;border-radius:3px;margin-top:8px;overflow:hidden}
+.course-progress-fill{height:100%;border-radius:3px}
+.course-progress-text{font-size:11px;font-weight:700;margin-top:4px}
+
+.new-task-card{background:linear-gradient(135deg,var(--primary),var(--primary2));border-radius:var(--radius);padding:20px;margin-bottom:12px;box-shadow:0 8px 24px rgba(255,107,74,0.35);color:#fff;transition:all 0.2s;position:relative;overflow:hidden;display:flex;align-items:center;gap:14px}
+.new-task-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(255,255,255,0.2),transparent 70%);border-radius:50%}
+.new-task-icon{width:48px;height:48px;background:rgba(255,255,255,0.2);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:1;color:#fff}
+.new-task-text{position:relative;z-index:1;flex:1}
+.new-task-title{font-size:17px;font-weight:800;margin-bottom:3px;display:flex;align-items:center;gap:8px}
+.new-task-desc{font-size:13px;opacity:0.9;font-weight:500}
+
+/* 列表项*/
+.list-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card);border-radius:var(--radius-sm);margin-bottom:8px;box-shadow:var(--card-shadow);transition:all 0.2s}
+.list-item-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.list-item-content{flex:1;min-width:0}
+.list-item-title{font-size:14px;font-weight:700;margin-bottom:2px}
+.list-item-sub{font-size:12px;color:var(--text3)}
+.list-item-arrow{color:var(--text3)}
+
+/* Tab栏*/
+.tab-bar{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+.tab-item{padding:8px 16px;background:var(--card);border-radius:12px;font-size:13px;font-weight:600;color:var(--text2);white-space:nowrap;box-shadow:var(--card-shadow);transition:all 0.2s;border:none}
+.tab-item.active{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff}
+
+/* 表单 */
+.form-group{margin-bottom:16px}
+.form-label{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:8px;display:block}
+.form-input,.form-select{width:100%;padding:12px 16px;background:#f5f8fb;border:2px solid #e8eef4;border-radius:14px;font-size:14px;color:var(--text);outline:none;transition:all 0.2s;font-family:inherit}
+.form-input:focus,.form-select:focus{border-color:var(--primary);background:#fff}
+.form-textarea{width:100%;padding:12px 16px;background:#f5f8fb;border:2px solid #e8eef4;border-radius:14px;font-size:14px;color:var(--text);outline:none;transition:all 0.2s;font-family:inherit;min-height:100px;resize:vertical}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 14px;background:#f5f8fb;border:2px solid #e8eef4;border-radius:12px;font-size:13px;font-weight:600;color:var(--text2);transition:all 0.2s}
+.chip.selected{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border-color:transparent}
+
+/* 按钮 */
+.btn{padding:14px 24px;border-radius:16px;font-size:15px;font-weight:700;border:none;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;box-shadow:0 6px 16px rgba(255,107,74,0.35)}
+.btn-secondary{background:var(--card);color:var(--text);box-shadow:var(--card-shadow)}
+.btn:active{transform:scale(0.97)}
+
+/* AI对话 */
+.chat-container{padding:0 20px 20px;min-height:60vh}
+.chat-message{display:flex;gap:10px;margin-bottom:16px;max-width:85%}
+.chat-message.user{margin-left:auto;flex-direction:row-reverse}
+.chat-avatar{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.chat-bubble{padding:12px 16px;border-radius:16px;font-size:14px;line-height:1.6}
+.chat-message.ai .chat-bubble{background:var(--card);border-bottom-left-radius:6px;box-shadow:var(--card-shadow)}
+.chat-message.user .chat-bubble{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border-bottom-right-radius:6px}
+.chat-input-bar{position:fixed;bottom:100px;left:0;right:0;padding:12px 20px;background:rgba(255,255,255,0.95);backdrop-filter:blur(10px);display:flex;gap:10px;z-index:50}
+.chat-input{flex:1;padding:12px 16px;background:#f5f8fb;border:2px solid #e8eef4;border-radius:14px;font-size:14px;outline:none;font-family:inherit}
+.chat-send{width:44px;height:44px;background:linear-gradient(135deg,var(--primary),var(--primary2));border-radius:14px;border:none;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 12px rgba(255,107,74,0.3)}
+
+/* 知识图谱鑺傜偣 */
+.kg-container{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--card-shadow);min-height:400px;position:relative;overflow:hidden}
+.kg-node{position:absolute;padding:10px 16px;background:linear-gradient(135deg,var(--blue-light),#fff);border:2px solid var(--blue2);border-radius:12px;font-size:12px;font-weight:700;color:var(--blue);cursor:pointer;transition:all 0.2s}
+.kg-node:hover{transform:scale(1.1);box-shadow:0 4px 12px rgba(91,163,217,0.3)}
+.kg-node.center{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border-color:transparent;font-size:14px;padding:12px 20px}
+
+/* Notebook代码块*/
+.nb-cell{background:var(--card);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;box-shadow:var(--card-shadow)}
+.nb-cell-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:11px;color:var(--text3);font-weight:600}
+.nb-code{background:#1e293b;color:#e2e8f0;padding:14px;border-radius:10px;font-family:'SF Mono',Consolas,monospace;font-size:12px;line-height:1.6;overflow-x:auto;white-space:pre}
+.nb-output{background:#f0f7ff;border-left:3px solid var(--blue);padding:12px;margin-top:10px;border-radius:0 8px 8px 0;font-size:13px;color:var(--text2)}
+
+/* 文章详情 */
+.article-detail{background:var(--card);border-radius:var(--radius);padding:24px;box-shadow:var(--card-shadow)}
+.article-detail h1{font-size:22px;font-weight:800;margin-bottom:12px;line-height:1.4}
+.article-meta-row{display:flex;gap:16px;font-size:12px;color:var(--text3);margin-bottom:20px;flex-wrap:wrap}
+.article-body{font-size:15px;line-height:1.8;color:var(--text2)}
+.article-body p{margin-bottom:16px}
+.article-body h3{font-size:17px;font-weight:700;color:var(--text);margin:24px 0 12px}
+
+/* 分子建模 */
+.molecule-viewer{background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:var(--radius);height:300px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;margin-bottom:16px}
+.molecule-atom{position:absolute;width:24px;height:24px;border-radius:50%;box-shadow:0 0 20px currentColor}
+.molecule-bond{position:absolute;height:3px;background:rgba(255,255,255,0.3);transform-origin:left center}
+
+/* 空状态*/
+.empty-state{text-align:center;padding:40px 20px}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:0.5}
+.empty-text{font-size:14px;color:var(--text3);font-weight:500}
+
+/* 用户切换器*/
+.user-switcher{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--card-shadow)}
+.user-switcher-title{font-size:13px;font-weight:700;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.user-list{display:flex;flex-direction:column;gap:8px}
+.user-option{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;transition:all 0.2s;border:2px solid transparent}
+.user-option.active{background:linear-gradient(135deg,#fff5f0,#fff);border-color:var(--primary)}
+.user-option-avatar{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;flex-shrink:0}
+.user-option-info{flex:1}
+.user-option-name{font-size:14px;font-weight:700}
+.user-option-role{font-size:11px;color:var(--text3)}
+.user-option-check{color:var(--primary);display:none}
+.user-option.active .user-option-check{display:block}
+
+/* 文章卡片 */
+.article-card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:10px;box-shadow:var(--card-shadow);transition:all 0.2s}
+.article-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;margin-bottom:8px}
+.article-title{font-size:14px;font-weight:700;margin-bottom:8px;line-height:1.4}
+.article-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);align-items:center}
+.article-stats{display:flex;gap:12px}
+.article-stat{display:flex;align-items:center;gap:3px}
+
+/* Notebook卡片 */
+.notebook-card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:10px;box-shadow:var(--card-shadow);transition:all 0.2s;display:flex;align-items:center;gap:12px}
+.notebook-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.notebook-info{flex:1;min-width:0}
+.notebook-title{font-size:14px;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.notebook-meta{font-size:11px;color:var(--text3);display:flex;gap:10px}
+
+/* 工作流卡片*/
+.workflow-card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:10px;box-shadow:var(--card-shadow)}
+.workflow-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.workflow-name{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.workflow-steps{font-size:11px;color:var(--text3);margin-bottom:6px}
+.workflow-current{font-size:12px;color:var(--primary);font-weight:600;margin-bottom:8px}
+
+.bottom-nav{position:fixed;bottom:16px;left:16px;right:16px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:22px;display:flex;justify-content:space-around;padding:10px 8px;z-index:100;box-shadow:0 10px 40px rgba(100,140,180,0.25),0 2px 8px rgba(100,140,180,0.1);border:1px solid rgba(255,255,255,0.8)}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;border-radius:16px;transition:all 0.25s;position:relative;color:var(--text3)}
+.nav-item.active{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;box-shadow:0 4px 12px rgba(255,107,74,0.35)}
+.nav-label{font-size:10px;font-weight:700;transition:color 0.25s}
+
+.page{display:none;animation:fadeUp 0.3s cubic-bezier(0.16,1,0.3,1)}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.toast{position:fixed;top:30px;left:50%;transform:translateX(-50%) translateY(-20px);background:rgba(45,58,74,0.95);backdrop-filter:blur(10px);color:#fff;padding:12px 24px;border-radius:16px;font-size:14px;font-weight:600;z-index:1000;opacity:0;transition:all 0.3s;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,0.2);display:flex;align-items:center;gap:8px}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.fab{position:fixed;bottom:100px;right:20px;width:58px;height:58px;background:linear-gradient(135deg,var(--primary),var(--primary2));border-radius:20px;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 8px 24px rgba(255,107,74,0.4),inset 0 1px 0 rgba(255,255,255,0.3);z-index:99;border:none;transition:all 0.2s}
+
+/* 隐藏子页面的底部导航 */
+.sub-page .bottom-nav{display:none}
+
+/* Notebook编辑器样式*/
+.notebook-cell{background:var(--card);border-radius:var(--radius-sm);margin-bottom:12px;box-shadow:var(--card-shadow);border:2px solid transparent;transition:all 0.2s;overflow:hidden}
+.notebook-cell.selected{border-color:var(--primary);box-shadow:0 0 0 3px rgba(255,107,74,0.15)}
+.cell-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg-secondary);border-bottom:1px solid var(--border)}
+.cell-type-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px}
+.cell-type-badge.code{background:rgba(91,163,217,0.15);color:var(--blue)}
+.cell-type-badge.md{background:rgba(155,126,216,0.15);color:var(--purple)}
+.cell-exec-count{font-size:11px;color:var(--text3);font-family:monospace;margin-left:auto;margin-right:8px}
+.cell-actions{display:flex;gap:2px}
+.cell-btn{background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:6px;color:var(--text3);display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.cell-btn:hover{background:var(--border);color:var(--text)}
+.cell-btn:disabled{opacity:0.5;cursor:not-allowed}
+.cell-input{width:100%;border:none;outline:none;padding:12px;font-size:13px;line-height:1.6;background:transparent;resize:vertical;min-height:60px;font-family:'SF Mono',Consolas,monospace;color:var(--text)}
+.code-cell{background:#fafbfc;border-top:1px solid var(--border)}
+.markdown-cell{font-family:-apple-system,sans-serif;white-space:pre-wrap}
+.cell-output{padding:12px;background:#f8fafc;border-top:1px solid var(--border);font-size:12px;line-height:1.6}
+.cell-output pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:'SF Mono',Consolas,monospace;color:var(--text2)}
+.cell-output.error{background:#fef2f2}
+.loading-spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 页面切换淡入动画 */
+.page{opacity:0;transform:translateY(8px);transition:opacity 0.25s ease,transform 0.25s ease}
+.page.active{opacity:1;transform:translateY(0)}
+
+/* 卡片点击反馈 */
+.card{transition:transform 0.15s ease,box-shadow 0.15s ease}
+.card:active{transform:scale(0.98)}
+
+/* 按钮点击反馈 */
+.btn{transition:transform 0.12s ease,opacity 0.12s ease}
+.btn:active{transform:scale(0.96);opacity:0.9}
+
+/* 内容加载淡入 */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeInUp 0.3s ease forwards}
+
+/* 空状态样式*/
+.empty-state{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty-state .empty-icon{font-size:48px;margin-bottom:12px;opacity:0.5}
+.empty-state .empty-text{font-size:14px;line-height:1.6}
+
+/* 骨架屏加载*/
+.skeleton{background:linear-gradient(90deg,var(--bg-secondary) 25%,var(--bg-tertiary) 50%,var(--bg-secondary) 75%);background-size:200% 100%;animation:skeleton 1.5s infinite;border-radius:8px}
+@keyframes skeleton{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Tab切换过渡 */
+.tab-item{transition:all 0.2s ease}
+.tab-item.active{transform:scale(1.02)}
+
+/* 进度条动画*/
+.course-progress-fill{transition:width 0.5s ease}
+</style>
+</head>
+<body>
+
+<div class="cloud c1"></div>
+<div class="cloud c2"></div>
+
+<div class="toast" id="toast"><i data-lucide="check-circle-2" class="lucide icon-white"></i><span id="toast-text"></span></div>
+
+<!-- ========== 首页 ========== -->
+<div class="page active" id="page-home">
+<div class="header">
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-icon"><i data-lucide="atom" class="lucide icon-xl icon-white"></i></div>
+      <div><div class="logo-text">UniSci</div><div class="logo-sub">全民科学计算平台</div></div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="navigateTo('page-search')"><i data-lucide="search" class="lucide"></i></button>
+      <button class="icon-btn" onclick="navigateTo('page-notifications')"><i data-lucide="bell" class="lucide"></i><span class="badge-dot"></span></button>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="welcome-card" id="welcome-card"></div>
+  <div class="stats-row" id="stats-row"></div>
+  <div class="section-header"><div class="section-title"><span class="section-title-icon sti-orange"><i data-lucide="zap" class="lucide"></i></span>快捷功能</div></div>
+  <div class="quick-grid">
+    <div class="quick-item" onclick="switchTab('compute')"><div class="quick-icon qi-orange"><i data-lucide="cpu" class="lucide icon-xl icon-white"></i></div><div class="quick-label">计算任务</div></div>
+    <div class="quick-item" onclick="navigateTo('page-notebook-list')"><div class="quick-icon qi-blue"><i data-lucide="notebook-pen" class="lucide icon-xl icon-white"></i></div><div class="quick-label">Notebook</div></div>
+    <div class="quick-item" onclick="navigateTo('page-ai-chat')"><div class="quick-icon qi-green"><i data-lucide="bot" class="lucide icon-xl icon-white"></i></div><div class="quick-label">AI助手</div></div>
+    <div class="quick-item" onclick="navigateTo('page-materials')"><div class="quick-icon qi-yellow"><i data-lucide="flask-conical" class="lucide icon-xl icon-white"></i></div><div class="quick-label">材料库</div></div>
+    <div class="quick-item" onclick="navigateTo('page-workflow-list')"><div class="quick-icon qi-pink"><i data-lucide="workflow" class="lucide icon-xl icon-white"></i></div><div class="quick-label">工作流</div></div>
+    <div class="quick-item" onclick="navigateTo('page-experiments')"><div class="quick-icon qi-teal"><i data-lucide="microscope" class="lucide icon-xl icon-white"></i></div><div class="quick-label">虚拟实验</div></div>
+    <div class="quick-item" onclick="navigateTo('page-knowledge-graph')"><div class="quick-icon qi-purple"><i data-lucide="network" class="lucide icon-xl icon-white"></i></div><div class="quick-label">知识图谱</div></div>
+    <div class="quick-item" onclick="navigateTo('page-molecules')"><div class="quick-icon qi-gray"><i data-lucide="layout-grid" class="lucide icon-xl icon-white"></i></div><div class="quick-label">更多</div></div>
+  </div>
+  <div class="big-stat-card" id="gpu-card"></div>
+
+  <!-- 🚀 一键计算区域 - 第一纵队 -->
+  <div class="section-header" style="margin-top:20px">
+    <div class="section-title">
+      <span class="section-title-icon sti-red" style="background:linear-gradient(135deg,#ff6b6b,#ee5a5a)">
+        <i data-lucide="rocket" class="lucide" style="width:14px;height:14px"></i>
+      </span>
+      一键计算
+      <span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:8px">点一下，跑起来</span>
+    </div>
+    <div class="section-more" onclick="switchTab('compute')" style="cursor:pointer">全部模板</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+    <!-- 模板1：MoS₂能带结构 -->
+    <div class="card" onclick="quickCompute('mos2_band')" style="cursor:pointer;padding:16px;display:flex;align-items:center;gap:14px;border-left:4px solid #ff6b6b">
+      <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#ff6b6b,#ee5a5a);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i data-lucide="layers" class="lucide icon-white" style="width:24px;height:24px"></i>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:700;color:var(--text)">MoS₂ 能带结构计算</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px">VASP · DFT · 预计8分钟 · 含能带图+态密度</div>
+      </div>
+      <div style="flex-shrink:0">
+        <span class="badge" style="background:#ff6b6b22;color:#ff6b6b;font-size:11px;padding:4px 10px">热门</span>
+      </div>
+    </div>
+    <!-- 模板2：石墨烯输运 -->
+    <div class="card" onclick="quickCompute('graphene_transport')" style="cursor:pointer;padding:16px;display:flex;align-items:center;gap:14px;border-left:4px solid #4ecdc4">
+      <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#4ecdc4,#44a08d);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i data-lucide="zap" class="lucide icon-white" style="width:24px;height:24px"></i>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:700;color:var(--text)">石墨烯纳米带 输运性质</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px">VASP · DFT+NEGF · 预计12分钟 · 含透射系数</div>
+      </div>
+      <div style="flex-shrink:0">
+        <span class="badge" style="background:#4ecdc422;color:#4ecdc4;font-size:11px;padding:4px 10px">进阶</span>
+      </div>
+    </div>
+    <!-- 模板3：水分子优化 -->
+    <div class="card" onclick="quickCompute('water_opt')" style="cursor:pointer;padding:16px;display:flex;align-items:center;gap:14px;border-left:4px solid #a8e6cf">
+      <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#a8e6cf,#88d8b0);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i data-lucide="droplets" class="lucide icon-white" style="width:24px;height:24px"></i>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:700;color:var(--text)">水分子 结构优化</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px">VASP · DFT · 预计3分钟 · 新手入门首选</div>
+      </div>
+      <div style="flex-shrink:0">
+        <span class="badge" style="background:#a8e6cf33;color:#5cb85c;font-size:11px;padding:4px 10px">入门</span>
+      </div>
+    </div>
+  </div>
+  <div class="section-header"><div class="section-title"><span class="section-title-icon sti-blue"><i data-lucide="bar-chart-3" class="lucide"></i></span>运行中任务</div><div class="section-more" onclick="switchTab('compute')">全部 <i data-lucide="chevron-right" class="lucide" style="width:14px;height:14px"></i></div></div>
+  <div id="home-running-jobs"></div>
+  <div class="section-header"><div class="section-title"><span class="section-title-icon sti-orange"><i data-lucide="brain-circuit" class="lucide"></i></span>AI 智能助手</div></div>
+  <div class="ai-card" onclick="navigateTo('page-ai-chat')">
+    <div class="ai-header"><div class="ai-avatar"><i data-lucide="brain" class="lucide icon-xl icon-white"></i></div><div><div class="ai-name">UniSci AI 助手</div><div class="ai-status"><span class="badge-dot-icon" style="background:var(--green)"></span>在线 · Agent协作</div></div></div>
+    <div class="ai-chips">
+      <span class="ai-chip"><i data-lucide="line-chart" class="lucide" style="width:14px;height:14px;color:var(--primary)"></i>分析计算结果</span>
+      <span class="ai-chip"><i data-lucide="code-2" class="lucide" style="width:14px;height:14px;color:var(--blue)"></i>生成计算代码</span>
+      <span class="ai-chip"><i data-lucide="book-open" class="lucide" style="width:14px;height:14px;color:var(--green)"></i>查找相关文献</span>
+    </div>
+  </div>
+  <div class="section-header"><div class="section-title"><span class="section-title-icon sti-purple"><i data-lucide="graduation-cap" class="lucide"></i></span>继续学习</div><div class="section-more" onclick="switchTab('learn')">全部 <i data-lucide="chevron-right" class="lucide" style="width:14px;height:14px"></i></div></div>
+  <div id="home-courses"></div>
+</div>
+</div>
+
+<!-- ========== 计算页========== -->
+<div class="page" id="page-compute">
+<div class="header"><div class="header-top"><div class="logo"><div class="logo-icon"><i data-lucide="cpu" class="lucide icon-xl icon-white"></i></div><div><div class="logo-text">计算中心</div><div class="logo-sub">管理你的科学计算任务</div></div></div></div></div>
+<div class="container">
+  <div class="new-task-card" onclick="navigateTo('page-job-new')"><div class="new-task-icon"><i data-lucide="plus" class="lucide icon-xl icon-white"></i></div><div class="new-task-text"><div class="new-task-title">新建计算任务</div><div class="new-task-desc">支持 DFT · MD · ML 路 有限元等多种计算管理</div></div></div>
+  <div id="compute-filters"></div>
+  <div id="compute-job-list"></div>
+</div>
+</div>
+
+<!-- ========== 学习页========== -->
+<div class="page" id="page-learn">
+<div class="header"><div class="header-top"><div class="logo"><div class="logo-icon"><i data-lucide="book-open" class="lucide icon-xl icon-white"></i></div><div><div class="logo-text">学习中心</div><div class="logo-sub">从入门到前沿，全栈科学教育</div></div></div></div></div>
+<div class="container">
+  <div class="tab-bar">
+    <button class="tab-item active" onclick="LearningSystem.setFilter('all')">全部</button>
+    <button class="tab-item" onclick="LearningSystem.setFilter('本科')">本科</button>
+    <button class="tab-item" onclick="LearningSystem.setFilter('高中')">中学</button>
+    <button class="tab-item" onclick="LearningSystem.setFilter('前沿')">前沿</button>
+  </div>
+  <div class="section-header"><div class="section-title"><span class="section-title-icon sti-orange"><i data-lucide="book-marked" class="lucide"></i></span>我的课程</div></div>
+  <div id="learn-courses"></div>
+  <div class="section-header"><div class="section-title"><span class="section-title-icon sti-blue"><i data-lucide="star" class="lucide"></i></span>推荐课程</div></div>
+  <div id="recommend-courses"></div>
+</div>
+</div>
+
+<!-- ========== AI页========== -->
+<div class="page" id="page-ai">
+<div class="header"><div class="header-top"><div class="logo"><div class="logo-icon"><i data-lucide="bot" class="lucide icon-xl icon-white"></i></div><div><div class="logo-text">AI 智能中心</div><div class="logo-sub">AI Agent 路 自然语言编程 · 知识图谱</div></div></div></div></div>
+<div class="container">
+  <div class="ai-card" onclick="navigateTo('page-ai-chat')">
+    <div class="ai-header"><div class="ai-avatar"><i data-lucide="brain" class="lucide icon-xl icon-white"></i></div><div><div class="ai-name">UniSci AI 助手</div><div class="ai-status"><span class="badge-dot-icon" style="background:var(--green)"></span>在线 · Agent协作</div></div></div>
+    <div class="ai-chips">
+      <span class="ai-chip"><i data-lucide="users" class="lucide" style="width:14px;height:14px;color:var(--primary)"></i>组建研究团队</span>
+      <span class="ai-chip"><i data-lucide="code-2" class="lucide" style="width:14px;height:14px;color:var(--blue)"></i>生成计算代码</span>
+      <span class="ai-chip"><i data-lucide="network" class="lucide" style="width:14px;height:14px;color:var(--green)"></i>知识图谱问答</span>
+      <span class="ai-chip"><i data-lucide="file-text" class="lucide" style="width:14px;height:14px;color:var(--purple)"></i>自动撰写论文</span>
+    </div>
+  </div>
+  <div class="section-header"><div class="section-title"><span class="section-title-icon sti-purple"><i data-lucide="zap" class="lucide"></i></span>AI 能力</div></div>
+  <div class="quick-grid">
+    <div class="quick-item" onclick="navigateTo('page-ai-chat')"><div class="quick-icon qi-orange"><i data-lucide="users" class="lucide icon-xl icon-white"></i></div><div class="quick-label">多Agent</div></div>
+    <div class="quick-item" onclick="navigateTo('page-ai-chat')"><div class="quick-icon qi-blue"><i data-lucide="message-square-code" class="lucide icon-xl icon-white"></i></div><div class="quick-label">对话编程</div></div>
+    <div class="quick-item" onclick="navigateTo('page-knowledge-graph')"><div class="quick-icon qi-green"><i data-lucide="network" class="lucide icon-xl icon-white"></i></div><div class="quick-label">知识图谱</div></div>
+    <div class="quick-item" onclick="navigateTo('page-ai-chat')"><div class="quick-icon qi-yellow"><i data-lucide="file-text" class="lucide icon-xl icon-white"></i></div><div class="quick-label">自动科研</div></div>
+  </div>
+  <div class="section-header"><div class="section-title"><span class="section-title-icon sti-blue"><i data-lucide="message-circle" class="lucide"></i></span>最近对话</div></div>
+  <div id="ai-conversations"></div>
+</div>
+</div>
+
+<!-- ========== 我的页========== -->
+<div class="page" id="page-profile">
+<div class="header">
+  <div class="header-top"><div class="logo"><div class="logo-icon"><i data-lucide="user-round" class="lucide icon-xl icon-white"></i></div><div><div class="logo-text">个人中心</div></div></div><div style="display:flex;gap:8px"><button class="icon-btn" onclick="navigateTo('page-notifications')"><i data-lucide="bell" class="lucide"></i></button><button class="icon-btn" onclick="navigateTo('page-settings')"><i data-lucide="settings" class="lucide"></i></button></div></div>
+  <div class="welcome-card" style="margin-bottom:0" id="profile-welcome"></div>
+</div>
+<div class="container">
+  <div class="stats-row" id="profile-stats"></div>
+  
+  <!-- 8个内容入口网格 -->
+  <div class="section-header"><div class="section-title" style="font-size:15px"><i data-lucide="layout-grid" class="lucide" style="width:16px;height:16px;color:var(--primary)"></i>我的内容</div></div>
+  <div class="quick-grid" id="profile-content-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px"></div>
+  
+  <!-- Tab切换：动态成就/资源 -->
+  <div class="tab-bar" style="margin-bottom:16px">
+    <button class="tab-item profile-tab active" data-tab="activity" onclick="ProfileRenderer.switchTab('activity')">动态</button>
+    <button class="tab-item profile-tab" data-tab="achievement" onclick="ProfileRenderer.switchTab('achievement')">成就</button>
+    <button class="tab-item profile-tab" data-tab="resource" onclick="ProfileRenderer.switchTab('resource')">资源</button>
+  </div>
+  <div id="profile-tabs-content"></div>
+  
+  <!-- 用户切换器-->
+  <div class="user-switcher" style="margin-top:20px"><div class="user-switcher-title"><i data-lucide="users" class="lucide" style="width:14px;height:14px"></i>切换测试用户</div><div class="user-list" id="user-list"></div></div>
+  
+  <!-- 快捷设置入口 -->
+  <div style="margin-top:20px">
+    <div class="list-item" onclick="navigateTo('page-settings')"><div class="list-item-icon" style="background:linear-gradient(135deg,#a0d0f0,#80bde0)"><i data-lucide="settings" class="lucide icon-white"></i></div><div class="list-item-content"><div class="list-item-title">账户设置</div><div class="list-item-sub">个人信息 · 安全 · 偏好 · 9大设置分组</div></div><i data-lucide="chevron-right" class="lucide list-item-arrow"></i></div>
+    <div class="list-item" onclick="navigateTo('page-article-publish')"><div class="list-item-icon" style="background:linear-gradient(135deg,#9b7ed8,#b8a0e8)"><i data-lucide="edit-3" class="lucide icon-white"></i></div><div class="list-item-content"><div class="list-item-title">发布文章</div><div class="list-item-sub">分享你的科研笔记和见解</div></div><i data-lucide="chevron-right" class="lucide list-item-arrow"></i></div>
+    <div class="list-item" onclick="ProfileEnhancements.openHelp()"><div class="list-item-icon" style="background:linear-gradient(135deg,#a0e0e0,#80d0d0)"><i data-lucide="help-circle" class="lucide icon-white"></i></div><div class="list-item-content"><div class="list-item-title">帮助与反馈</div><div class="list-item-sub">文档 · 教程 · 联系我们</div></div><i data-lucide="chevron-right" class="lucide list-item-arrow"></i></div>
+  </div>
+</div>
+</div>
+
+<!-- ========== 子页面：任务详情 ========== -->
+<div class="page sub-page" id="page-job-detail">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title" id="job-detail-title">任务详情</div><button class="sub-action" onclick="JobDetailRenderer.refresh()"><i data-lucide="refresh-cw" class="lucide"></i></button></div>
+<div class="container" id="job-detail-content"></div>
+</div>
+
+<!-- ========== 子页面：新建任务 ========== -->
+<div class="page sub-page" id="page-job-new">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">新建计算任务</div></div>
+<div class="container" id="job-new-content"></div>
+</div>
+
+<!-- ========== 子页面：Notebook列表 ========== -->
+<div class="page sub-page" id="page-notebook-list">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">我的 Notebook</div><button class="sub-action" onclick="NotebookListRendererV2.showNewMenu()"><i data-lucide="plus" class="lucide"></i></button></div>
+<div class="container">
+  <div id="notebook-tabs"></div>
+  <div id="notebook-toolbar"></div>
+  <div id="notebook-list-content"></div>
+</div>
+</div>
+
+<!-- ========== 子页面：Notebook详情 ========== -->
+<div class="page sub-page" id="page-notebook-detail">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title" id="notebook-title">Notebook</div><button class="sub-action" onclick="NotebookEditorV2.save()"><i data-lucide="save" class="lucide"></i></button></div>
+<div class="container" style="padding-bottom:80px">
+  <div id="notebook-toolbar-detail"></div>
+  <div id="notebook-cells"></div>
+  <div id="notebook-status" style="position:fixed;bottom:60px;left:0;right:0;padding:0 12px;z-index:50"></div>
+</div>
+</div>
+
+<!-- ========== 子页面：课程详情 ========== -->
+<div class="page sub-page" id="page-course-detail">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title" id="course-detail-title">课程详情</div></div>
+<div class="container" id="course-detail-content"></div>
+</div>
+
+<!-- ========== 子页面：课时学习 ========== -->
+<div class="page sub-page" id="page-lesson">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title" id="lesson-title">课时学习</div><button class="sub-action" onclick="showLessonCatalog()"><i data-lucide="list" class="lucide"></i></button></div>
+<div class="container">
+  <div class="card" style="background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;text-align:center;padding:40px 20px">
+    <i data-lucide="play-circle" class="lucide icon-2xl icon-white" style="width:64px;height:64px;opacity:0.8"></i>
+    <div style="font-size:16px;font-weight:700;margin-top:16px" id="lesson-video-title">视频播放区域</div>
+    <div style="font-size:13px;opacity:0.6;margin-top:6px">点击播放课程视频</div>
+  </div>
+  <div class="card"><div class="card-title" style="margin-bottom:12px"><i data-lucide="file-text" class="lucide" style="width:16px;height:16px;color:var(--blue)"></i>课程讲义</div>
+    <div style="font-size:14px;line-height:1.8;color:var(--text2)"><p>本节课程主要介绍密度泛函理论的基本框架，包括Kohn-Sham方程、交换关联泛函以及平面波基组的选择。</p><p>通过本节学习，你将理解DFT计算的基本流程，并能够独立设置一个简单的VASP计算任务。</p></div></div>
+  <div class="card"><div class="card-title" style="margin-bottom:12px"><i data-lucide="help-circle" class="lucide" style="width:16px;height:16px;color:var(--primary)"></i>课后练习</div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:12px">1. 理解Kohn-Sham方程的物理意义</div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:12px">2. 比较LDA和GGA泛函的适用场景</div>
+    <button class="btn btn-secondary" onclick="submitHomework(this)"><i data-lucide="send" class="lucide"></i>提交答案</button></div>
+</div>
+</div>
+
+<!-- ========== 子页面：工作流列表========== -->
+<div class="page sub-page" id="page-workflow-list">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">工作流</div><button class="sub-action" onclick="WorkflowListRenderer.showTemplateMarket()"><i data-lucide="plus" class="lucide"></i></button></div>
+<div class="container" style="padding-bottom:80px">
+  <div id="workflow-tabs"></div>
+  <div id="workflow-list"></div>
+</div>
+</div>
+
+<!-- ========== 子页面：工作流编辑器 ========== -->
+<div class="page sub-page" id="page-workflow-editor">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">工作流编辑器</div></div>
+<div id="workflow-editor-container" style="height:calc(100vh - 120px);padding:0"></div>
+</div>
+
+<div class="page sub-page" id="page-molecules">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">分子建模器</div><button class="sub-action" onclick="MoleculeRenderer.showPresetList()"><i data-lucide="library" class="lucide"></i></button></div>
+<div class="container" style="padding-bottom:80px">
+  <div id="molecule-viewer" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:16px;box-shadow:var(--card-shadow)"></div>
+  <div id="molecule-info"></div>
+  <div id="molecule-toolbar"></div>
+</div>
+</div>
+
+<!-- ========== 子页面：计算结果 ========== -->
+<div class="page sub-page" id="page-results">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">计算结果</div><button class="sub-action" onclick="ResultsRenderer.shareResults()"><i data-lucide="share-2" class="lucide"></i></button></div>
+<div class="container" id="results-content"></div>
+</div>
+
+<!-- ========== 子页面：AI对话 ========== -->
+<div class="page sub-page" id="page-ai-chat">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">UniSci AI 助手</div><button class="sub-action" onclick="clearChat()"><i data-lucide="trash-2" class="lucide"></i></button></div>
+<div class="chat-container" id="chat-messages">
+  <div class="chat-message ai"><div class="chat-avatar" style="background:linear-gradient(135deg,var(--primary),var(--primary2))"><i data-lucide="brain" class="lucide icon-white"></i></div><div class="chat-bubble">你好！我是UniSci AI助手，可以帮你进行科学计算、数据分析、代码生成和文献检索。请问有什么可以帮你的？</div></div>
+  <div class="chat-message user"><div class="chat-avatar" style="background:linear-gradient(135deg,var(--blue),var(--blue2))"><i data-lucide="user" class="lucide icon-white"></i></div><div class="chat-bubble">帮我分析一下MoS₂的能带结构计算结果</div></div>
+  <div class="chat-message ai"><div class="chat-avatar" style="background:linear-gradient(135deg,var(--primary),var(--primary2))"><i data-lucide="brain" class="lucide icon-white"></i></div><div class="chat-bubble">根据你的计算结果，MoS₂的带隙1.8 eV，属于直接带隙半导体。导带底和价带顶均位于K点。态密度分析显示，价带主要由S的p轨道贡献，导带主要由Mo的d轨道贡献。建议进一步计算光学性质和载流子迁移率。</div></div>
+</div>
+<div class="chat-input-bar"><input class="chat-input" id="chat-input" placeholder="输入你的问题..." onkeydown="if(event.key==='Enter')sendChat()"><button class="chat-send" onclick="sendChat()"><i data-lucide="send" class="lucide icon-white"></i></button></div>
+</div>
+
+<!-- ========== 子页面：知识图谱 ========== -->
+<div class="page sub-page" id="page-knowledge-graph">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">知识图谱</div></div>
+<div style="padding:12px">
+  <!-- 工具栏 -->
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <input type="text" id="kg-search" placeholder="搜索知识节点..." oninput="KnowledgeGraphRenderer.search(this.value)" style="flex:1;min-width:150px;padding:8px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;background:#fff">
+    <button onclick="KnowledgeGraphRenderer.setMode('2d')" id="kg-btn-2d" style="padding:8px 14px;background:#3b82f6;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer">二维</button>
+    <button onclick="KnowledgeGraphRenderer.setMode('3d')" id="kg-btn-3d" style="padding:8px 14px;background:#f1f5f9;color:#475569;border:none;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer">三维</button>
+    <button onclick="KnowledgeGraphRenderer.resetView()" style="padding:8px 12px;background:#f1f5f9;color:#475569;border:none;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer"><i data-lucide="rotate-ccw" class="lucide" style="width:14px;height:14px;vertical-align:middle"></i></button>
+  </div>
+  <!-- 主区域 -->
+  <div style="display:flex;gap:12px;height:calc(100vh - 200px)">
+    <!-- 图谱画布 -->
+    <div style="flex:1;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);position:relative;min-width:0">
+      <canvas id="kg-canvas" style="width:100%;height:100%;display:block;touch-action:none"></canvas>
+    </div>
+    <!-- 详情面板 -->
+    <div id="kg-detail-panel" style="width:220px;background:#0f172a;border-radius:16px;overflow-y:auto;flex-shrink:0;box-shadow:0 4px 20px rgba(0,0,0,0.1)">
+      <div style="padding:20px;text-align:center;color:#64748b">
+        <i data-lucide="mouse-pointer-click" class="lucide" style="width:32px;height:32px;margin-bottom:8px;opacity:0.5"></i>
+        <div style="font-size:13px">点击节点查看详情</div>
+        <div style="font-size:11px;margin-top:4px;color:#475569">拖拽节点 · 滚轮缩放</div>
+      </div>
+    </div>
+  </div>
+  <!-- 图例 -->
+  <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;justify-content:center">
+    <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:50%;background:#ef4444"></div><span style="font-size:10px;color:#64748b">理论</span></div>
+    <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:50%;background:#8b5cf6"></div><span style="font-size:10px;color:#64748b">方法</span></div>
+    <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:50%;background:#f59e0b"></div><span style="font-size:10px;color:#64748b">软件</span></div>
+    <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:50%;background:#3b82f6"></div><span style="font-size:10px;color:#64748b">概念</span></div>
+    <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:50%;background:#10b981"></div><span style="font-size:10px;color:#64748b">材料</span></div>
+    <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:50%;background:#06b6d4"></div><span style="font-size:10px;color:#64748b">应用</span></div>
+    <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:50%;background:#ec4899"></div><span style="font-size:10px;color:#64748b">科学家</span></div>
+  </div>
+</div>
+</div>
+
+<div class="page sub-page" id="page-materials">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">材料数据库</div><button class="sub-action" onclick="MaterialListRenderer.showCompare()"><i data-lucide="git-compare" class="lucide"></i></button></div>
+<div class="container">
+  <div id="material-toolbar"></div>
+  <div id="material-categories"></div>
+  <div id="material-list"></div>
+</div>
+</div>
+
+<!-- ========== 子页面：材料详情 ========== -->
+<div class="page sub-page" id="page-material-detail">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title" id="material-detail-title">材料详情</div><button class="sub-action" onclick="MaterialDetailRenderer.exportData()"><i data-lucide="download" class="lucide"></i></button></div>
+<div class="container">
+  <div id="material-detail-header"></div>
+  <!-- 增强功能栏 -->
+  <div id="material-enhance-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <button onclick="MaterialsEnhancements.toggleFavorite(MaterialDetailRenderer.currentMaterial?.id); MaterialDetailRenderer.refresh();" id="mat-fav-btn" style="padding:8px 12px;background:#fffef0;color:#f59e0b;border:1px solid #fde68a;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px">
+      <i data-lucide="star" class="lucide" style="width:14px;height:14px"></i>收藏
+    </button>
+    <button onclick="MaterialsEnhancements.addToCompare(MaterialDetailRenderer.currentMaterial?.id); alert('已添加到对比')" style="padding:8px 12px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px">
+      <i data-lucide="git-compare" class="lucide" style="width:14px;height:14px"></i>对比
+    </button>
+    <button onclick="var r=MaterialsEnhancements.exportMaterial(MaterialDetailRenderer.currentMaterial?.id,'cif'); alert('已导出: '+r.filename)" style="padding:8px 12px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px">
+      <i data-lucide="download" class="lucide" style="width:14px;height:14px"></i>导出CIF
+    </button>
+    <button onclick="var r=MaterialsEnhancements.submitCalculation(MaterialDetailRenderer.currentMaterial?.id,'DFT'); alert('计算任务已提交: '+r.jobId)" style="padding:8px 12px;background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px">
+      <i data-lucide="zap" class="lucide" style="width:14px;height:14px"></i>提交计算
+    </button>
+  </div>
+  <!-- 晶体结构可视化 -->
+  <div id="material-crystal-viewer" class="card" style="margin-bottom:12px;padding:16px"></div>
+  <div id="material-detail-tabs"></div>
+  <div id="material-detail-content"></div>
+  <div id="material-related"></div>
+</div>
+</div>
+
+<!-- ========== 子页面：虚拟实验 ========== -->
+<div class="page sub-page" id="page-experiments">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">虚拟实验室</div></div>
+<div class="container">
+  <div class="tab-bar"><button class="tab-item active" onclick="VirtualLab.setTab('physics')">物理实验</button><button class="tab-item" onclick="VirtualLab.setTab('chemistry')">化学实验</button><button class="tab-item" onclick="VirtualLab.setTab('biology')">生物实验</button><button class="tab-item" onclick="VirtualLab.setTab('material')">材料实验</button></div>
+  <div id="experiment-list"></div>
+</div>
+</div>
+
+<!-- ========== 子页面：搜索 ========== -->
+<div class="page sub-page" id="page-search">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">搜索</div></div>
+<div class="container">
+  <div class="card" style="padding:12px 16px;margin-bottom:16px"><input class="form-input" id="search-input" placeholder="搜索任务、课程、文章、材料..." autofocus style="margin-bottom:0" oninput="handleSearchInput(this.value)" onkeydown="if(event.key==='Enter')handleSearchSubmit(this.value)"></div>
+  <div id="search-suggestions"></div>
+  <div id="search-results" style="display:none"></div>
+  <div id="search-default">
+    <div class="section-header"><div class="section-title" style="font-size:15px"><i data-lucide="clock" class="lucide" style="width:16px;height:16px;color:var(--text3)"></i>最近搜索</div><div class="section-more" onclick="Search.clearHistory();document.getElementById('search-history-chips').innerHTML='';UI.toast.success('已清除搜索历史)" style="cursor:pointer">清除</div></div>
+    <div class="chip-row" id="search-history-chips"></div>
+    <div class="section-header" style="margin-top:20px"><div class="section-title" style="font-size:15px"><i data-lucide="trending-up" class="lucide" style="width:16px;height:16px;color:var(--primary)"></i>鐑棬搜索</div></div>
+    <div id="search-hot-list"></div>
+  </div>
+</div>
+</div>
+<script>
+// 搜索页面初始化
+function initSearchPage() {
+  // 渲染搜索历史
+  const historyChips = document.getElementById('search-history-chips');
+  if (historyChips && Search.history.length > 0) {
+    historyChips.innerHTML = Search.history.slice(0,8).map(h => '<span class="chip" onclick="document.getElementById(\'search-input\').value=\''+h+'\';handleSearchSubmit(\''+h+'\')">'+h+'</span>').join('');
+  }
+  // 渲染鐑棬搜索
+  const hotList = document.getElementById('search-hot-list');
+  if (hotList) {
+    const hotData = [
+      {title:'室温超导材料',count:'12.3万次搜索',icon:'flame',color:'#ffb8a0'},
+      {title:'AI for Science',count:'8.7万次搜索',icon:'brain',color:'#a0d0f0'},
+      {title:'量子计算',count:'6.5万次搜索',icon:'cpu',color:'#c8b0f0'},
+      {title:'二维材料',count:'5.2万次搜索',icon:'layers',color:'#a0e8c0'},
+      {title:'DFT计算教程',count:'4.8万次搜索',icon:'book-open',color:'#ffe0a0'}
+    ];
+    hotList.innerHTML = hotData.map(h => '<div class="list-item" onclick="document.getElementById(\'search-input\').value=\''+h.title+'\';handleSearchSubmit(\''+h.title+'\')"><div class="list-item-icon" style="background:linear-gradient(135deg,'+h.color+','+h.color+'cc)"><i data-lucide="'+h.icon+'" class="lucide icon-white"></i></div><div class="list-item-content"><div class="list-item-title">'+h.title+'</div><div class="list-item-sub">'+h.count+'</div></div><i data-lucide="chevron-right" class="lucide list-item-arrow"></i></div>').join('');
+  }
+  if (typeof renderIcons === 'function') renderIcons();
+}
+
+// 搜索输入实时联想
+async function handleSearchInput(value) {
+  const suggestionsEl = document.getElementById('search-suggestions');
+  const resultsEl = document.getElementById('search-results');
+  const defaultEl = document.getElementById('search-default');
+  
+  if (!value.trim()) {
+    suggestionsEl.innerHTML = '';
+    resultsEl.style.display = 'none';
+    defaultEl.style.display = 'block';
+    return;
+  }
+  
+  defaultEl.style.display = 'none';
+  resultsEl.style.display = 'none';
+  
+  const suggestions = await Search.suggest(value);
+  if (suggestions.length > 0) {
+    suggestionsEl.innerHTML = '<div class="card" style="padding:8px">'+suggestions.slice(0,8).map(s => '<div onclick="document.getElementById(\'search-input\').value=\''+s.text+'\';handleSearchSubmit(\''+s.text+'\')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer" onmouseover="this.style.background=\'var(--bg-secondary)\'" onmouseout="this.style.background=\'transparent\'"><i data-lucide="'+s.icon+'" class="lucide" style="width:16px;height:16px;color:var(--text3)"></i><span style="font-size:14px;color:var(--text);flex:1">'+s.text+'</span><span style="font-size:11px;color:var(--text3)">'+s.type+'</span></div>').join('')+'</div>';
+    if (typeof renderIcons === 'function') renderIcons();
+  } else {
+    suggestionsEl.innerHTML = '';
+  }
+}
+
+// 提交搜索
+async function handleSearchSubmit(keyword) {
+  if (!keyword.trim()) return;
+  Search.addHistory(keyword);
+  
+  const suggestionsEl = document.getElementById('search-suggestions');
+  const resultsEl = document.getElementById('search-results');
+  const defaultEl = document.getElementById('search-default');
+  
+  suggestionsEl.innerHTML = '';
+  defaultEl.style.display = 'none';
+  resultsEl.style.display = 'block';
+  resultsEl.innerHTML = '<div style="text-align:center;padding:40px">'+UI.loading.spinner(24)+'<p style="font-size:13px;color:var(--text3);margin-top:12px">搜索一..</p></div>';
+  
+  const results = await Search.search(keyword);
+  const sources = Object.keys(results);
+  
+  if (sources.length === 0) {
+    var emptyDesc = '未找到与\"' + keyword + '\"相关的内容，请尝试其他关键词';
+    if (typeof UI !== 'undefined' && UI.state && UI.state.empty) {
+      resultsEl.innerHTML = UI.state.empty('search', {desc: emptyDesc});
+    } else {
+      resultsEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">' + emptyDesc + '</div>';
+    }
+    return;
+  }
+  
+  let html = '';
+  sources.forEach(source => {
+    const r = results[source];
+    html += '<div class="section-header"><div class="section-title" style="font-size:15px"><i data-lucide="'+r.icon+'" class="lucide" style="width:16px;height:16px;color:'+r.color+'"></i>'+r.name+' <span style="font-size:12px;color:var(--text3);font-weight:500">('+r.total+')</span></div></div>';
+    html += r.items.map(item => Search.renderResultItem(source, item)).join('');
+  });
+  resultsEl.innerHTML = html;
+  if (typeof renderIcons === 'function') renderIcons();
+}
+</script>
+
+<!-- ========== 子页面：通知 ========== -->
+<div class="page sub-page" id="page-notifications">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">通知中心</div><button class="sub-action" onclick="Notification.markAllRead();renderNotifications();" title="全部已读"><i data-lucide="check-check" class="lucide"></i></button></div>
+<div class="container">
+  <div class="tab-bar" id="notification-tabs">
+    <button class="tab-item active" onclick="filterNotifications('all',this)">全部</button>
+    <button class="tab-item" onclick="filterNotifications('unread',this)">鏈</button>
+    <button class="tab-item" onclick="filterNotifications('job',this)">任务</button>
+    <button class="tab-item" onclick="filterNotifications('system',this)">系统</button>
+    <button class="tab-item" onclick="filterNotifications('community',this)">互动</button>
+  </div>
+  <div id="notification-list"></div>
+  <div style="text-align:center;padding:20px">
+    <button class="btn btn-secondary" style="width:auto;padding:10px 20px;font-size:13px" onclick="Notification.clearAll()"><i data-lucide="trash-2" class="lucide" style="width:14px;height:14px"></i>娓呯┖通知</button>
+  </div>
+</div>
+</div>
+<script>
+let currentNotificationFilter = 'all';
+function renderNotifications() {
+  const listEl = document.getElementById('notification-list');
+  if (!listEl) return;
+  const filter = currentNotificationFilter;
+  let list = Notification.getList();
+  
+  if (filter === 'unread') list = list.filter(n => !n.read);
+  else if (filter !== 'all') list = list.filter(n => n.type === filter);
+  
+  if (list.length === 0) {
+    listEl.innerHTML = UI.state.empty('notification');
+    if (typeof renderIcons === 'function') renderIcons();
+    return;
+  }
+  
+  Notification.renderList(listEl, {type: filter === 'unread' ? undefined : filter, unreadOnly: filter === 'unread'});
+}
+function filterNotifications(type, el) {
+  currentNotificationFilter = type;
+  document.querySelectorAll('#notification-tabs .tab-item').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderNotifications();
+}
+</script>
+
+<!-- ========== 子页面：文章详情 ========== -->
+<div class="page sub-page" id="page-article-detail">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">文章详情</div><button class="sub-action" onclick="shareArticle()"><i data-lucide="share-2" class="lucide"></i></button></div>
+<div class="container"><div class="article-detail" id="article-detail-content"></div></div>
+</div>
+
+<!-- ========== 子页面：账户设置 ========== -->
+<div class="page sub-page" id="page-settings">
+<div class="sub-header"><button class="back-btn" onclick="SettingsRenderer.currentGroup?SettingsRenderer.backToMain():goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title" id="settings-detail-title">账户设置</div></div>
+<div class="container">
+  <!-- 设置主页面：9个分组列表-->
+  <div id="settings-main"></div>
+  <!-- 设置详情页面 -->
+  <div id="settings-detail" style="display:none">
+    <div id="settings-detail-content"></div>
+  </div>
+</div>
+</div>
+
+<!-- ========== 子页面：登录注册 ========== -->
+<div class="page sub-page" id="page-login">
+<div class="container" style="padding-top:60px" id="login-content"></div>
+</div>
+
+<!-- ========== 子页面：发布文章 ========== -->
+<div class="page sub-page" id="page-article-publish">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">发布文章</div><button class="sub-action" onclick="ArticlePublishRenderer.saveDraft()" title="存草稿><i data-lucide="save" class="lucide"></i></button></div>
+<div class="container" id="publish-content"></div>
+</div>
+
+<!-- ========== 子页面：我的内容列表 ========== -->
+<div class="page sub-page" id="page-my-content">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title" id="my-content-title">我的内容</div></div>
+<div class="container">
+  <div id="my-content-filters"></div>
+  <div id="my-content-list"></div>
+</div>
+</div>
+
+<button class="fab" onclick="navigateTo('page-job-new')"><i data-lucide="plus" class="lucide icon-xl icon-white"></i></button>
+
+<nav class="bottom-nav">
+  <div class="nav-item active" data-page="home" onclick="switchTab('home')"><i data-lucide="home" class="lucide"></i><div class="nav-label">首页</div></div>
+  <div class="nav-item" data-page="compute" onclick="switchTab('compute')"><i data-lucide="cpu" class="lucide"></i><div class="nav-label">计算</div></div>
+  <div class="nav-item" data-page="learn" onclick="switchTab('learn')"><i data-lucide="book-open" class="lucide"></i><div class="nav-label">学习</div></div>
+  <div class="nav-item" data-page="ai" onclick="switchTab('ai')"><i data-lucide="bot" class="lucide"></i><div class="nav-label">AI</div></div>
+  <div class="nav-item" data-page="profile" onclick="switchTab('profile')"><i data-lucide="user" class="lucide"></i><div class="nav-label">我的</div></div>
+</nav>
+
+<script>
+// ===== 导航系统 (已由 core.js 提供完整实现，此处保留兼容变量 =====
+// 注意: navigateTo/goBack/switchTab/showToast/_store 等全局函数由 core.js 提供
+let pageHistory = ['page-home'];
+let currentPage = 'page-home';
+let currentData = {};
+// 全局导航数据存储：避免内嵌JSON导致引号转义问题
+const _navStore = {};
+let _navCounter = 0;
+function _store(data) { const id = 'nd' + (++_navCounter); _navStore[id] = data; return id; }
+
+function navigateTo(pageId, data) {
+  // 如果data是字符串且以'nd'开头，从全局存储获取
+  if (typeof data === 'string' && data.startsWith('nd') && _navStore[data]) {
+    data = _navStore[data];
+  }
+  if (data) currentData[pageId] = data;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById(pageId);
+  if (target) {
+    target.classList.add('active');
+    if (pageId !== currentPage) pageHistory.push(pageId);
+    currentPage = pageId;
+    window.scrollTo({top:0,behavior:'smooth'});
+    // 子页面隐藏底部导航和FAB
+    const isSub = target.classList.contains('sub-page');
+    document.querySelector('.bottom-nav').style.display = isSub ? 'none' : 'flex';
+    document.querySelector('.fab').style.display = isSub ? 'none' : 'flex';
+    // 渲染子页面内容
+    renderSubPage(pageId);
+    renderIcons();
+  }
+}
+
+function goBack() {
+  if (pageHistory.length > 1) {
+    pageHistory.pop();
+    const prev = pageHistory[pageHistory.length - 1];
+    currentPage = prev;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(prev).classList.add('active');
+    const isSub = document.getElementById(prev).classList.contains('sub-page');
+    document.querySelector('.bottom-nav').style.display = isSub ? 'none' : 'flex';
+    document.querySelector('.fab').style.display = isSub ? 'none' : 'flex';
+    // 更新底部导航激活状态
+    const tabMap = {'page-home':'home','page-compute':'compute','page-learn':'learn','page-ai':'ai','page-profile':'profile'};
+    if (tabMap[prev]) {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelector('.nav-item[data-page="'+tabMap[prev]+'"]').classList.add('active');
+    }
+    window.scrollTo({top:0,behavior:'smooth'});
+    renderIcons();
+  }
+}
+
+function switchTab(tab) {
+  pageHistory = ['page-'+tab];
+  currentPage = 'page-'+tab;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector('.nav-item[data-page="'+tab+'"]').classList.add('active');
+  document.querySelector('.bottom-nav').style.display = 'flex';
+  document.querySelector('.fab').style.display = 'flex';
+  window.scrollTo({top:0,behavior:'smooth'});
+  renderIcons();
+}
+
+// ===== 图标渲染 =====
+function renderIcons() {
+  if (window.lucide && typeof window.lucide.createIcons === 'function') {
+    window.lucide.createIcons();
+  } else {
+    setTimeout(renderIcons, 100);
+  }
+}
+
+// ===== Toast =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ===== 工具函数 =====
+function iconColorClass(color) {
+  const map = { primary:'var(--primary)', blue:'var(--blue)', green:'var(--green)', purple:'var(--purple)', orange:'var(--primary)', yellow:'var(--yellow)' };
+  return map[color] || 'var(--text2)';
+}
+function progressColorClass(p) { if(p>=80)return'pf-green'; if(p>=50)return'pf-blue'; if(p>=20)return'pf-orange'; return'pf-purple'; }
+
+function selectChip(el) {
+  el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function submitJob() {
+  // 实际调用JobManager创建任务，而非仅显示toast
+  if (typeof JobManager !== 'undefined' && typeof JobManager.createJob === 'function') {
+    try {
+      const jobData = {
+        title: '新建计算任务',
+        type: 'dft',
+        software: 'ABACUS',
+        status: 'queued',
+        progress: 0,
+        createdAt: new Date().toISOString()
+      };
+      const job = JobManager.createJob(jobData);
+      if (typeof UI !== 'undefined' && UI.toast) {
+        UI.toast.success('任务已提交，正在排队...');
+      } else {
+        showToast('任务已提交，正在排队...');
+      }
+      setTimeout(() => {
+        if (typeof switchTab === 'function') switchTab('compute');
+      }, 1000);
+      return;
+    } catch(e) {
+      console.error('创建任务失败:', e);
+    }
+  }
+  // Fallback: 显示toast并跳转
+  if (typeof UI !== 'undefined' && UI.toast) {
+    UI.toast.info('任务已提交，正在排队...');
+  } else {
+    showToast('任务已提交，正在排队...');
+  }
+  setTimeout(() => { if (typeof switchTab === 'function') switchTab('compute'); }, 1000);
+}
+
+// ===== 主页面渲染=====
+function renderWelcome() {
+  const u = getCurrentUser();
+  const tagClass = u.levelColor==='purple'?'welcome-tag-purple':u.levelColor==='green'?'welcome-tag-green':'';
+  document.getElementById('welcome-card').innerHTML = `<div class="welcome-row"><div class="avatar">${u.avatar}</div><div class="welcome-text"><h2>${u.name}</h2><p>${u.university} 路 ${u.major} 路 ${u.grade}</p><span class="welcome-tag ${tagClass}"><i data-lucide="sparkles" class="lucide" style="width:12px;height:12px"></i>${u.level}会员</span></div></div>`;
+}
+
+function renderStats() {
+  const u = getCurrentUser();
+  document.getElementById('stats-row').innerHTML = `<div class="stat-card"><div class="stat-value">${u.stats.totalJobs}</div><div class="stat-label">总任务</div></div><div class="stat-card blue"><div class="stat-value">${Math.floor(u.stats.gpuHours)}<span class="stat-unit">h</span></div><div class="stat-label">GPU时长</div></div><div class="stat-card green"><div class="stat-value">${u.stats.courses}</div><div class="stat-label">学习课程</div></div>`;
+}
+
+function renderGpuCard() {
+  const u = getCurrentUser();
+  const used = u.stats.gpuHours;
+  const total = u.level==='专业版'?1000:u.level==='入门版'?100:10;
+  const remaining = Math.max(0, total-used);
+  const percent = Math.min(100, (used/total)*100);
+  document.getElementById('gpu-card').innerHTML = `<div class="big-stat-row"><div class="big-stat-number">${remaining.toFixed(1)}</div><div class="big-stat-unit">GPU小时</div></div><div class="big-stat-label"><i data-lucide="gauge" class="lucide" style="width:14px;height:14px"></i>本月剩余算力 · 已使用 ${used.toFixed(1)}h / ${total}h</div><div class="big-stat-bar"><div class="big-stat-bar-fill" style="width:${percent}%"></div></div>`;
+}
+
+function renderJobCard(job) {
+  const iconColor = iconColorClass(job.iconColor);
+  if (job.status==='running'||job.status==='queued') {
+    const badge = job.status==='running'?'<span class="card-badge badge-running"><span class="badge-dot-icon"></span>运行中</span>':'<span class="card-badge badge-queued"><i data-lucide="clock" class="lucide" style="width:11px;height:11px"></i>排队中</span>';
+    return `<div class="card" onclick="navigateTo('page-job-detail','${_store(job)}')"><div class="card-header"><div class="card-title"><i data-lucide="${job.icon}" class="lucide" style="width:16px;height:16px;color:${iconColor}"></i>${job.title}</div>${badge}</div><div class="job-meta"><span><i data-lucide="flask-conical" class="lucide" style="width:13px;height:13px"></i>${job.software} 路 ${job.type}</span><span>${job.status==='running'?job.progress+'%':job.eta}</span></div><div class="progress-track"><div class="progress-fill ${progressColorClass(job.progress)}" style="width:${job.progress}%"></div></div></div>`;
+  }
+  return `<div class="card" onclick="navigateTo('page-job-detail','${_store(job)}')"><div class="card-header"><div class="card-title"><i data-lucide="${job.icon}" class="lucide" style="width:16px;height:16px;color:${iconColor}"></i>${job.title}</div><span class="card-badge badge-completed">已完成</span></div><div class="job-meta"><span><i data-lucide="flask-conical" class="lucide" style="width:13px;height:13px"></i>${job.software} 路 ${job.type}</span><span>${job.completed} 路 ${job.duration}</span></div></div>`;
+}
+
+function renderHomeJobs() {
+  const u = getCurrentUser();
+  document.getElementById('home-running-jobs').innerHTML = u.runningJobs.map(renderJobCard).join('') || '<div class="empty-state"><div class="empty-icon">馃摥</div><div class="empty-text">暂无运行中的任务</div></div>';
+}
+
+function renderComputeJobs() {
+  if (typeof JobListRenderer !== 'undefined') {
+    JobListRenderer.render();
+  } else {
+    const u = getCurrentUser();
+    const runningEl = document.getElementById('compute-running');
+    const completedEl = document.getElementById('compute-completed');
+    if (runningEl) runningEl.innerHTML = u.runningJobs.map(renderJobCard).join('') || '<div class="empty-state"><div class="empty-icon">鈴</div><div class="empty-text">暂无进行中的任务</div></div>';
+    if (completedEl) completedEl.innerHTML = u.completedJobs.slice(0,5).map(renderJobCard).join('');
+  }
+}
+
+function renderCourseCard(course) {
+  const colorMap={orange:'ct-orange',blue:'ct-blue',green:'ct-green',purple:'ct-purple',teal:'ct-teal'};
+  const fillMap={orange:'pf-orange',blue:'pf-blue',green:'pf-green',purple:'pf-purple'};
+  const textColor={orange:'var(--primary)',blue:'var(--blue)',green:'var(--green)',purple:'var(--purple)'};
+  return `<div class="card course-card" onclick="navigateTo('page-course-detail','${_store(course)}')"><div class="course-thumb ${colorMap[course.color]||'ct-blue'}"><i data-lucide="${course.icon}" class="lucide icon-2xl icon-white"></i></div><div class="course-info"><div class="course-name">${course.title}</div><div class="course-meta"><i data-lucide="play-circle" class="lucide" style="width:12px;height:12px"></i>${course.totalLessons}课时 路 ${course.currentLesson}</div><div class="course-progress-bar"><div class="course-progress-fill ${fillMap[course.color]||'pf-blue'}" style="width:${course.progress}%"></div></div><div class="course-progress-text" style="color:${textColor[course.color]||'var(--blue)'}">进度 ${course.progress}%</div></div></div>`;
+}
+
+function renderCourses() {
+  const u = getCurrentUser();
+  document.getElementById('home-courses').innerHTML = u.courses.slice(0,2).map(renderCourseCard).join('');
+  document.getElementById('learn-courses').innerHTML = u.courses.map(renderCourseCard).join('');
+}
+
+function renderRecommendCourses() {
+  const recs = [
+    {title:'材料科学基础',icon:'flask-conical',color:'green',meta:'20课时 · 适合本科生'},
+    {title:'AI for Science',icon:'brain',color:'purple',meta:'15课时 · 前沿方向'},
+    {title:'虚拟实验室：化学实验',icon:'microscope',color:'orange',meta:'10个实验 · 适合中学生'},
+    {title:'量子力学奇妙之旅',icon:'orbit',color:'blue',meta:'12课时 · 适合高中生'}
+  ];
+  document.getElementById('recommend-courses').innerHTML = recs.map(c => {
+    var courseData = _store({title:c.title, icon:c.icon, color:c.color, meta:c.meta, totalLessons:20, progress:0, currentLesson:'开始学习'});
+    return '<div class="card course-card" onclick="navigateTo(\'page-course-detail\',\'' + courseData + '\')"><div class="course-thumb ct-' + c.color + '"><i data-lucide="' + c.icon + '" class="lucide icon-2xl icon-white"></i></div><div class="course-info"><div class="course-name">' + c.title + '</div><div class="course-meta"><i data-lucide="play-circle" class="lucide" style="width:12px;height:12px"></i>' + c.meta + '</div></div></div>';
+  }).join('');
+}
+
+function filterCourses(type, el) {
+  el.parentElement.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  // 实际筛选逻辑：根据类型显示/隐藏课程卡片
+  const containers = ['recommend-courses', 'all-courses', 'course-list'];
+  let filtered = 0, total = 0;
+  containers.forEach(id => {
+    const container = document.getElementById(id);
+    if (!container) return;
+    const cards = container.querySelectorAll('.course-card, .list-item, .card');
+    cards.forEach(card => {
+      total++;
+      const text = card.textContent.toLowerCase();
+      const typeMap = {
+        'all': true,
+        'recommend': text.includes('推荐')||text.includes('热门'),
+        'free': text.includes('免费'),
+        'paid': text.includes('付费'),
+        'beginner': text.includes('入门')||text.includes('基础'),
+        'advanced': text.includes('进阶')||text.includes('高级'),
+        'dft': text.includes('dft')||text.includes('密度泛函'),
+        'md': text.includes('md')||text.includes('分子动力学'),
+        'ml': text.includes('ml')||text.includes('机器学习')||text.includes('ai')
+      };
+      const show = typeMap[type] !== undefined ? typeMap[type] : true;
+      if (show) { card.style.display = ''; filtered++; }
+      else { card.style.display = 'none'; }
+    });
+  });
+  var filterMsg = '筛选：' + el.textContent.trim() + '（' + filtered + '/' + total + '个课程）';
+  if (typeof UI !== 'undefined' && UI.toast) {
+    UI.toast.info(filterMsg);
+  } else {
+    showToast(filterMsg);
+  }
+}
+
+// ===== 提交作业 =====
+function submitHomework(btn) {
+  if (typeof UI !== 'undefined' && UI.dialog) {
+    UI.dialog.confirm({
+      title: '提交作业',
+      message: '确认提交本次课后作业答案？提交后将进入AI批改流程，预计1-3分钟内返回批改结果。',
+      confirmText: '确认提交',
+      cancelText: '再检查一下',
+      onConfirm: () => {
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i data-lucide="loader-2" class="lucide"></i>提交中...'; renderIcons(); }
+        setTimeout(() => {
+          if (typeof UI !== 'undefined') UI.toast.success('作业已提交，AI正在批改中...');
+          if (btn) { btn.innerHTML = '<i data-lucide="check-circle" class="lucide"></i>已提交'; }
+          renderIcons();
+        }, 1500);
+      }
+    });
+  } else {
+    showToast('作业已提交');
+    if (btn) { btn.disabled = true; btn.textContent = '已提交'; }
+  }
+}
+
+// ===== 运行全部Notebook单元格 =====
+function runAllNotebookCells(btn) {
+  // 优先调用NotebookEditor的runAll方法
+  if (typeof NotebookEditor !== 'undefined' && typeof NotebookEditor.runAll === 'function') {
+    NotebookEditor.runAll();
+    return;
+  }
+  // 降级方案：模拟运行全部单元格
+  if (typeof UI !== 'undefined' && UI.dialog) {
+    UI.dialog.confirm({
+      title: '运行全部单元格',
+      message: '将按顺序执行当前Notebook中的所有代码单元格，预计需要10-30秒。是否继续？',
+      confirmText: '开始运行',
+      cancelText: '取消',
+      onConfirm: () => {
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i data-lucide="loader-2" class="lucide icon-white"></i>运行中..'; renderIcons(); }
+        const cells = document.querySelectorAll('.nb-cell');
+        let index = 0;
+        const runNext = () => {
+          if (index >= cells.length) {
+            if (btn) { btn.innerHTML = '<i data-lucide="play" class="lucide icon-white"></i>运行全部'; btn.disabled = false; }
+            if (typeof UI !== 'undefined') UI.toast.success('全部 ' + cells.length + ' 个单元格运行完成');
+            renderIcons();
+            return;
+          }
+          const cell = cells[index];
+          const status = cell.querySelector('.nb-cell-header span:last-child');
+          if (status) { status.textContent = '运行中..'; status.style.color = 'var(--orange)'; }
+          setTimeout(() => {
+            if (status) { status.textContent = '已完成'; status.style.color = 'var(--green)'; }
+            index++;
+            runNext();
+          }, 400);
+        };
+        runNext();
+      }
+    });
+  } else {
+    showToast('开始运行全部单元格...');
+  }
+}
+
+// ===== 🚀 一键计算 - 第一纵队 =====
+function quickCompute(templateId) {
+  const templates = {
+    mos2_band: {
+      title: 'MoS₂ 能带结构计算', type: 'DFT', software: 'VASP', softwareVersion: '6.4.0',
+      resourceConfig: { cpuCores: 16, gpuModel: null, gpuCount: 0, memory: 'auto', maxDuration: '12h', priority: 'normal' },
+      inputFiles: [{ name: 'POSCAR (MoS₂)', size: '1.2 KB' }, { name: 'INCAR (能带计算)', size: '0.8 KB' }, { name: 'KPOINTS', size: '0.3 KB' }]
+    },
+    graphene_transport: {
+      title: '石墨烯纳米带 输运性质', type: 'DFT+NEGF', software: 'VASP', softwareVersion: '6.4.0',
+      resourceConfig: { cpuCores: 32, gpuModel: null, gpuCount: 0, memory: 'auto', maxDuration: '24h', priority: 'high' },
+      inputFiles: [{ name: 'POSCAR (石墨烯纳米带)', size: '2.1 KB' }, { name: 'INCAR (输运计算)', size: '1.5 KB' }]
+    },
+    water_opt: {
+      title: '水分子 结构优化', type: 'DFT', software: 'VASP', softwareVersion: '6.4.0',
+      resourceConfig: { cpuCores: 8, gpuModel: null, gpuCount: 0, memory: 'auto', maxDuration: '6h', priority: 'normal' },
+      inputFiles: [{ name: 'POSCAR (H₂O)', size: '0.5 KB' }, { name: 'INCAR (结构优化)', size: '0.6 KB' }]
+    }
+  };
+  const tpl = templates[templateId];
+  if (!tpl) { if (typeof UI !== 'undefined') UI.toast.error('模板不存在'); else showToast('模板不存在'); return; }
+  if (typeof UI !== 'undefined') UI.toast.success('正在提交：' + tpl.title); else showToast('正在提交：' + tpl.title);
+  const job = JobManager.createJob(tpl);
+  setTimeout(() => { navigateTo('page-job-detail', _store(job)); }, 800);
+}
+
+function renderAIConversations() {
+  const u = getCurrentUser();
+  const convos = u.articles.map(a => {
+    var isMagnet = a.tag.includes('磁拓') || a.tag.includes('拓展');
+    var isMolecule = a.tag.includes('分子');
+    return {
+      title: a.title.substring(0,20) + (a.title.length>20?'...':''),
+      icon: isMagnet ? 'magnet' : (isMolecule ? 'dna' : 'code-2'),
+      color: isMagnet ? 'purple' : (isMolecule ? 'green' : 'blue'),
+      time: a.date,
+      count: Math.floor(a.comments*1.5) + '条消息'
+    };
+  });
+  document.getElementById('ai-conversations').innerHTML = convos.map(c => {
+    return '<div class="card" onclick="navigateTo(\'page-ai-chat\')"><div class="card-header"><div class="card-title"><i data-lucide="' + c.icon + '" class="lucide" style="width:16px;height:16px;color:' + iconColorClass(c.color) + '"></i>' + c.title + '</div><span class="card-badge badge-completed">已完成</span></div><div class="job-meta"><span><i data-lucide="bot" class="lucide" style="width:13px;height:13px"></i>AI助手 · ' + c.time + '</span><span>' + c.count + '</span></div></div>';
+  }).join('');
+}
+
+function renderProfile() {
+  if (typeof ProfileRenderer !== 'undefined') {
+    ProfileRenderer.render();
+  } else {
+    // 兼容旧版渲染
+    const u = getCurrentUser();
+    const tagClass = u.levelColor==='purple'?'welcome-tag-purple':u.levelColor==='green'?'welcome-tag-green':'';
+    const el = document.getElementById('profile-welcome');
+    if (el) el.innerHTML = `<div class="welcome-row"><div class="avatar avatar-purple">${u.avatar}</div><div class="welcome-text"><h2 style="font-size:18px">${u.name}</h2><p>${u.university} 路 ${u.department}</p><span class="welcome-tag ${tagClass}"><i data-lucide="sparkles" class="lucide" style="width:12px;height:12px"></i>${u.level} 路 ${u.role}</span></div></div>`;
+    const statsEl = document.getElementById('profile-stats');
+    if (statsEl) statsEl.innerHTML = `<div class="stat-card"><div class="stat-value">${u.stats.totalJobs}</div><div class="stat-label">总任务</div></div><div class="stat-card blue"><div class="stat-value">${Math.floor(u.stats.gpuHours)}h</div><div class="stat-label">总时长</div></div><div class="stat-card green"><div class="stat-value">${u.stats.courses}</div><div class="stat-label">课程</div></div>`;
+  }
+}
+
+function renderAll() {
+  renderWelcome(); renderStats(); renderGpuCard(); renderHomeJobs();
+  renderComputeJobs(); renderCourses(); renderRecommendCourses();
+  renderAIConversations(); renderProfile(); renderMaterialsList();
+  renderIcons();
+}
+
+function doSwitchUser(index) {
+  switchUser(index);
+  showToast(`已切换到：{getCurrentUser().name}`);
+}
+
+// ===== 子页面渲染=====
+function renderSubPage(pageId) {
+  const data = currentData[pageId] || {};
+
+  // === API数据自动同步（fire-and-forget，不阻塞渲染） ===
+  if (typeof DataSync !== 'undefined' && !DataSync.isMockMode()) {
+    if (['page-compute','page-job-list','page-job-detail','page-job-new','page-results'].includes(pageId)) {
+      DataSync.jobs.syncList().then(synced => { if (synced && typeof JobListRenderer !== 'undefined') { try { JobListRenderer.render(); } catch(e){} } });
+      if (pageId === 'page-job-detail' && data?.id) DataSync.jobs.syncDetail(data.id);
+    }
+    if (['page-notebook-list','page-notebook-detail'].includes(pageId)) {
+      DataSync.notebooks.syncList().then(synced => { if (synced && typeof NotebookListRenderer !== 'undefined') { try { NotebookListRenderer.render(); } catch(e){} } });
+    }
+    if (['page-workflow-list','page-workflow-editor'].includes(pageId)) {
+      DataSync.workflows.syncList().then(synced => { if (synced && typeof WorkflowListRenderer !== 'undefined') { try { WorkflowListRenderer.render(); } catch(e){} } });
+    }
+    if (['page-materials','page-material-detail'].includes(pageId)) {
+      DataSync.materials.syncList().then(synced => { if (synced && typeof MaterialListRenderer !== 'undefined') { try { MaterialListRenderer.render(); } catch(e){} } });
+    }
+  }
+
+  if (pageId === 'page-job-detail') {
+    if (typeof JobDetailRenderer !== 'undefined') {
+      const job = data && data.id ? JobManager.getJob(data.id) : (getCurrentUser().runningJobs[0] || getCurrentUser().completedJobs[0] || {});
+      JobDetailRenderer.render(job);
+    } else renderJobDetail(data);
+  }
+  if (pageId === 'page-job-new') { if (typeof NewJobWizard !== 'undefined') NewJobWizard.init(); }
+  if (pageId === 'page-results') {
+    if (typeof ResultsRenderer !== 'undefined') {
+      const job = data && data.id ? JobManager.getJob(data.id) : (getCurrentUser().completedJobs[0] || getCurrentUser().runningJobs[0] || {});
+      ResultsRenderer.render(job);
+    }
+  }
+  if (pageId === 'page-notebook-list') { setTimeout(() => { if (typeof NotebookListRendererV2 !== 'undefined') NotebookListRendererV2.render(); }, 100); }
+  if (pageId === 'page-notebook-detail') { setTimeout(() => { if (typeof NotebookEditorV2 !== 'undefined') { if (data && typeof data === 'string') NotebookEditorV2.open(data); else NotebookEditorV2.open(null); } }, 100); }
+  if (pageId === 'page-article-detail') renderArticleDetail(data);
+  if (pageId === 'page-notebook-list') { if (typeof NotebookListRenderer !== 'undefined') NotebookListRenderer.render(); else renderNotebookList(); }
+  if (pageId === 'page-settings') { if (typeof SettingsRenderer !== 'undefined') SettingsRenderer.renderMain(); else renderSettings(); }
+  if (pageId === 'page-search') initSearchPage();
+  if (pageId === 'page-notifications') renderNotifications();
+  if (pageId === 'page-login') { if (typeof LoginRenderer !== 'undefined') LoginRenderer.render(); }
+  if (pageId === 'page-article-publish') { if (typeof ArticlePublishRenderer !== 'undefined') ArticlePublishRenderer.render(); }
+  if (pageId === 'page-my-content') { if (typeof MyContentRenderer !== 'undefined') MyContentRenderer.render(); }
+  if (pageId === 'page-workflow-list') { setTimeout(() => { if (typeof WorkflowListRenderer !== 'undefined') WorkflowListRenderer.render(); }, 300); }
+      if (pageId === 'page-workflow-editor') { setTimeout(() => { if (typeof WorkflowEditor !== 'undefined') WorkflowEditor.init('workflow-editor-container'); }, 100); }
+  if (pageId === 'page-molecules') { if (typeof MoleculeRenderer !== 'undefined') MoleculeRenderer.init(); }
+  if (pageId === 'page-materials') { if (typeof MaterialListRenderer !== 'undefined') MaterialListRenderer.render(); }
+  if (pageId === 'page-material-detail') { if (typeof MaterialDetailRenderer !== 'undefined') MaterialDetailRenderer.init(data); setTimeout(() => { if (typeof MaterialsEnhancements !== 'undefined' && MaterialDetailRenderer.currentMaterial) { const c = document.getElementById('material-crystal-viewer'); if (c && c.innerHTML.length < 50) { c.innerHTML = '<div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:10px"><i data-lucide="box" class="lucide" style="width:16px;height:16px;color:#8b5cf6;vertical-align:middle"></i> 晶体结构</div>' + MaterialsEnhancements.renderCrystalViewer(MaterialDetailRenderer.currentMaterial.id); if (typeof renderIcons === 'function') renderIcons(); } } }, 200); }
+  if (pageId === 'page-knowledge-graph') { if (typeof KnowledgeGraph !== 'undefined') KnowledgeGraph.render(); }
+    setTimeout(() => { if (typeof KnowledgeGraphRenderer !== 'undefined') KnowledgeGraphRenderer.init('kg-canvas'); }, 150);
+  if (pageId === 'page-experiments') { if (typeof VirtualLab !== 'undefined') VirtualLab.render(); }
+  if (pageId === 'page-course-detail') { if (typeof LearningSystem !== 'undefined') LearningSystem.renderCourseDetail(data); else renderCourseDetail(data); }
+  if (pageId === 'page-lesson') { if (typeof LearningSystem !== 'undefined') LearningSystem.renderLesson(data); else renderLesson(data); }
+}
+
+function renderJobDetail(job) {
+  if (!job || !job.id) {
+    const u = getCurrentUser();
+    job = u.runningJobs[0] || u.completedJobs[0] || {};
+  }
+  document.getElementById('job-detail-title').textContent = job.title || '任务详情';
+  const isRunning = job.status === 'running';
+  document.getElementById('job-detail-content').innerHTML = `
+    <div class="card"><div class="card-header"><div class="card-title"><i data-lucide="${job.icon||'cpu'}" class="lucide" style="width:20px;height:20px;color:${iconColorClass(job.iconColor)}"></i>${job.title}</div><span class="card-badge ${isRunning?'badge-running':'badge-completed'}">${isRunning?'运行中':'已完成'}</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+      <div><div style="font-size:11px;color:var(--text3)">计算类型</div><div style="font-size:14px;font-weight:700">${job.type||'DFT'}</div></div>
+      <div><div style="font-size:11px;color:var(--text3)">计算软件</div><div style="font-size:14px;font-weight:700">${job.software||'VASP'}</div></div>
+      <div><div style="font-size:11px;color:var(--text3)">提交时间</div><div style="font-size:14px;font-weight:700">${job.submitted||job.completed||'-'}</div></div>
+      <div><div style="font-size:11px;color:var(--text3)">${isRunning?'预计完成':'计算时长'}</div><div style="font-size:14px;font-weight:700">${job.eta||job.duration||'-'}</div></div>
+    </div></div>
+    ${isRunning?`<div class="card"><div class="card-title" style="margin-bottom:12px">计算进度</div><div class="progress-track" style="height:14px"><div class="progress-fill ${progressColorClass(job.progress)}" style="width:${job.progress}%"></div></div><div style="font-size:13px;color:var(--text2);margin-top:10px;font-weight:600">${job.progress}% 路 ${job.eta}</div></div>`:''}
+    <div class="card"><div class="card-title" style="margin-bottom:12px"><i data-lucide="terminal" class="lucide" style="width:16px;height:16px;color:var(--green)"></i>计算日志</div>
+    <div style="background:#1e293b;color:#a5f3fc;padding:14px;border-radius:10px;font-family:monospace;font-size:11px;line-height:1.8;max-height:200px;overflow-y:auto">
+      <div style="color:#6ee7b7">[INFO] 任务启动，加载输入文件...</div>
+      <div style="color:#6ee7b7">[INFO] 读取POSCAR: 9 atoms, MoS2</div>
+      <div style="color:#6ee7b7">[INFO] K鐐圭綉栏 12x12x1</div>
+      <div style="color:#6ee7b7">[INFO] 截断能 500 eV</div>
+      <div style="color:#fcd34d">[WARN] 电子步收敛较慢，已调整混合参数</div>
+      <div style="color:#6ee7b7">[INFO] 电子自洽: E0=-89.234 eV</div>
+      <div style="color:#6ee7b7">[INFO] 力收敛 max force=0.012 eV/Å</div>
+      <div style="color:#a5f3fc">[...] 正在进行非自洽计算...</div>
+    </div></div>
+    ${!isRunning?`<button class="btn btn-primary" onclick="navigateTo('page-results')"><i data-lucide="bar-chart-3" class="lucide icon-white"></i>查看计算结果</button>`:`<button class="btn btn-secondary" onclick="cancelJob(this)"><i data-lucide="x-circle" class="lucide"></i>取消任务</button>`}
+  `;
+  renderIcons();
+}
+
+function renderCourseDetail(course) {
+  if (!course || !course.title) course = {title:'课程详情',icon:'book-open',color:'blue',totalLessons:16,progress:50,currentLesson:'第1课'};
+  document.getElementById('course-detail-title').textContent = course.title;
+  const colorMap={orange:'ct-orange',blue:'ct-blue',green:'ct-green',purple:'ct-purple',teal:'ct-teal'};
+  var lessonsHtml = '';
+  for (var i = 0; i < Math.min(course.totalLessons, 8); i++) {
+    var done = i < Math.floor(course.totalLessons * course.progress / 100);
+    var lessonTitle = '第' + (i+1) + '课：课程内容标题';
+    var lessonStatus = done ? '已完成' : '约10分钟';
+    var lessonData = _store({title: lessonTitle});
+    lessonsHtml += '<div class="list-item" onclick="navigateTo(\'page-lesson\',\'' + lessonData + '\')"><div class="list-item-icon" style="background:' + (done?'linear-gradient(135deg,#a0e8c0,#80dca8)':'linear-gradient(135deg,#d0d8e0,#b8c4d0)') + '"><i data-lucide="' + (done?'check-circle':'play-circle') + '" class="lucide icon-white"></i></div><div class="list-item-content"><div class="list-item-title">' + lessonTitle + '</div><div class="list-item-sub">' + lessonStatus + '</div></div><i data-lucide="chevron-right" class="lucide list-item-arrow"></i></div>';
+  }
+  var continueData = _store({title: course.currentLesson});
+  document.getElementById('course-detail-content').innerHTML = `
+    <div class="card" style="text-align:center;padding:30px 20px">
+      <div class="course-thumb ${colorMap[course.color]||'ct-blue'}" style="width:80px;height:80px;margin:0 auto 16px"><i data-lucide="${course.icon}" class="lucide icon-2xl icon-white" style="width:40px;height:40px"></i></div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:8px">${course.title}</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:16px">${course.totalLessons}课时 · ${course.progress}% 已完成</div>
+      <div class="progress-track"><div class="progress-fill pf-blue" style="width:${course.progress}%"></div></div>
+    </div>
+    <div class="section-header"><div class="section-title" style="font-size:15px"><i data-lucide="list" class="lucide" style="width:16px;height:16px"></i>课程目录</div></div>
+    ${lessonsHtml}
+    <button class="btn btn-primary" style="margin-top:16px" onclick="navigateTo('page-lesson','${continueData}')"><i data-lucide="play" class="lucide icon-white"></i>继续学习</button>
+  `;
+  renderIcons();
+}
+
+function renderNotebookDetail(nb) {
+  if (!nb || !nb.title) nb = {title:'Untitled Notebook',kernel:'Python 3.12',cells:20};
+  document.getElementById('nb-detail-title').textContent = nb.title;
+  document.getElementById('notebook-detail-content').innerHTML = `
+    <div class="card" style="padding:12px 16px;margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;color:var(--text2);display:flex;align-items:center;gap:6px"><i data-lucide="code-2" class="lucide" style="width:14px;height:14px"></i>${nb.kernel}</div><div style="font-size:11px;color:var(--green);font-weight:600;display:flex;align-items:center;gap:4px"><span class="badge-dot-icon" style="background:var(--green)"></span>已连接</div></div></div>
+    <div class="nb-cell"><div class="nb-cell-header"><span>In [1]:</span><span>已运行</span></div><div class="nb-code">import numpy as np
+import matplotlib.pyplot as plt
+
+# 读取VASP计算结果
+from pymatgen.io.vasp.outputs import Vasprun
+vr = Vasprun("vasprun.xml")
+band = vr.get_band_structure()</div></div>
+    <div class="nb-cell"><div class="nb-cell-header"><span>Out [1]:</span><span>输出</span></div><div class="nb-output">Band structure loaded: 9 bands, 120 k-points<br>Band gap: 1.8 eV (direct, at K point)</div></div>
+    <div class="nb-cell"><div class="nb-cell-header"><span>In [2]:</span><span>已运行</span></div><div class="nb-code"># 绘制能带结构图
+fig, ax = plt.subplots(figsize=(8,5))
+band.plot(ax=ax)
+ax.set_title("MoS2 Band Structure")
+plt.tight_layout()
+plt.savefig("band_structure.png", dpi=150)</div></div>
+    <div class="nb-cell"><div class="nb-cell-header"><span>In [3]:</span><span>未运行</span></div><div class="nb-code"># 态密度分析
+dos = vr.complete_dos
+print(f"费米能级: {dos.efermi:.3f} eV")
+print(f"总态密度@费米能级处: {dos.get_densities()[np.argmin(abs(dos.energies-dos.efermi))]:.3f}")</div></div>
+    <button class="btn btn-primary" onclick="runAllNotebookCells(this)"><i data-lucide="play" class="lucide icon-white"></i>运行全部</button>
+  `;
+  renderIcons();
+}
+
+function renderNotebookList() {
+  const u = getCurrentUser();
+  document.getElementById('notebook-list-content').innerHTML = u.notebooks.map(nb => `<div class="notebook-card" onclick="NotebookEditorV2.open('${nb.id}')"><div class="notebook-icon" style="background:linear-gradient(135deg,#a0d0f0,#80bde0)"><i data-lucide="${nb.icon}" class="lucide icon-lg icon-white"></i></div><div class="notebook-info"><div class="notebook-title">${nb.title}</div><div class="notebook-meta"><span><i data-lucide="code-2" class="lucide" style="width:11px;height:11px"></i>${nb.kernel}</span><span><i data-lucide="clock" class="lucide" style="width:11px;height:11px"></i>${nb.lastModified}</span><span>${nb.cells} cells</span></div></div></div>`).join('');
+  renderIcons();
+}
+
+function renderArticleDetail(article) {
+  if (!article || !article.title) article = {title:'文章标题',tag:'材料科学',date:'2026-08-01',likes:0,comments:0,views:0,id:'demo'};
+  const tagColors={'磁拓材料':'#9b7ed8','计算方法':'#5ba3d9','铁电材料':'#ff6b4a','分子动力学':'#5ccf8e','数据分析':'#ffc857','学习笔记':'#ff8fab'};
+  const articleId = article.id || 'demo';
+  const comments = typeof ArticleManager !== 'undefined' ? ArticleManager.getComments(articleId) : [];
+  
+  document.getElementById('article-detail-content').innerHTML = `
+    <span class="article-tag" style="background:${tagColors[article.tag]||'#5ba3d9'}22;color:${tagColors[article.tag]||'#5ba3d9'};font-size:12px;padding:4px 12px">${article.tag}</span>
+    <h1 style="margin-top:12px;font-size:22px;line-height:1.4">${article.title}</h1>
+    <div class="article-meta-row" style="margin:12px 0">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#9b7ed8,#b8a0e8);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px">${getCurrentUser().avatar}</div>
+        <div><div style="font-size:13px;font-weight:700">${getCurrentUser().name}</div><div style="font-size:11px;color:var(--text3)">${article.date} 路 ${article.views||0} 阅读</div></div>
+      </div>
+      <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="UI.toast.success('已关注作者)">+ 关注</button>
+    </div>
+    <div class="article-body">
+      <p>本文系统研究了{article.tag.includes('拓扑')?'拓扑材料的电子结构':'材料计算中的关键问题'}，通过第一性原理计算方法，深入分析了其物理机制和潜在应用。</p>
+      <h3>研究背景</h3>
+      <p>近年来，随着计算能力的提升和算法的进步，第一性原理计算在材料科学研究中发挥着越来越重要的作用。密度泛函理论（DFT）作为最常用的计算方法，已经能够准确预测材料的多种物理性质。</p>
+      <h3>计算方法</h3>
+      <p>本研究采用VASP软件包进行第一性原理计算，使用投影缀加波（PAW）方法描述离子实与价电子之间的相互作用。交换关联泛函采用广义梯度近似（GGA）下的PBE形式。截断能设置为500 eV，k点网格根据体系大小进行收敛性测试。</p>
+      <div style="background:#f5f8fb;padding:16px;border-radius:10px;margin:16px 0;font-family:monospace;font-size:12px;line-height:1.8;overflow-x:auto">
+        <div style="color:#666"># INCAR 关键参数</div>
+        <div>ENCUT = 500</div>
+        <div>EDIFF = 1E-6</div>
+        <div>IBRION = 2</div>
+        <div>NSW = 100</div>
+        <div>ISIF = 3</div>
+      </div>
+      <h3>结果与讨论</h3>
+      <p>计算结果表明，该材料具有独特的电子结构特征。能带结构分析显示，带隙大小为1.8 eV，属于直接带隙半导体。态密度分析揭示了各轨道对电子结构的贡献。</p>
+      <h3>结论</h3>
+      <p>本研究通过系统的第一性原理计算，揭示了材料的电子结构和物理性质，为后续实验研究和器件应用提供了理论指导。</p>
+    </div>
+    
+    <!-- 互动按钮 -->
+    <div style="display:flex;gap:12px;margin:24px 0;padding:16px;background:var(--bg-secondary);border-radius:14px;justify-content:space-around">
+      <button onclick="ArticleManager.toggleLike('${articleId}');renderArticleDetail(currentData['page-article-detail']||{});UI.toast.success('点赞成功')" style="display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer">
+        <i data-lucide="heart" class="lucide" style="width:22px;height:22px;color:${article.liked?'var(--primary)':'var(--text3)'};fill:${article.liked?'var(--primary)':'none'}"></i>
+        <span style="font-size:12px;color:var(--text2)">${article.likes||0}</span>
+      </button>
+      <button onclick="ArticleManager.toggleFavorite('${articleId}');UI.toast.success('已收藏)" style="display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer">
+        <i data-lucide="bookmark" class="lucide" style="width:22px;height:22px;color:${article.favorited?'var(--blue)':'var(--text3)'};fill:${article.favorited?'var(--blue)':'none'}"></i>
+        <span style="font-size:12px;color:var(--text2)">收藏</span>
+      </button>
+      <button onclick="UI.toast.success('链接已复制)" style="display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer">
+        <i data-lucide="share-2" class="lucide" style="width:22px;height:22px;color:var(--text3)"></i>
+        <span style="font-size:12px;color:var(--text2)">分享</span>
+      </button>
+      <button onclick="UI.toast.info('举报已提交)" style="display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer">
+        <i data-lucide="flag" class="lucide" style="width:22px;height:22px;color:var(--text3)"></i>
+        <span style="font-size:12px;color:var(--text2)">举报</span>
+      </button>
+    </div>
+    
+    <!-- 评论鍖?-->
+    <div class="section-header"><div class="section-title" style="font-size:15px">评论 (${comments.length})</div><div class="section-more" onclick="UI.toast.info('切换排序')">最热</div></div>
+    
+    <!-- 发表评论 -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;gap:10px">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#5ba3d9,#7ec0e8);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${getCurrentUser().avatar}</div>
+        <div style="flex:1">
+          <textarea class="form-textarea" id="comment-input" placeholder="写下你的评论..." style="min-height:60px;margin-bottom:8px"></textarea>
+          <div style="display:flex;justify-content:flex-end">
+            <button class="btn btn-primary" style="padding:6px 16px;font-size:12px" onclick="ArticleManager.addComment('${articleId}',document.getElementById('comment-input').value);document.getElementById('comment-input').value='';renderArticleDetail(currentData['page-article-detail']||{});UI.toast.success('评论发表成功')"><i data-lucide="send" class="lucide icon-white" style="width:14px;height:14px"></i>发表</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 评论列表 -->
+    ${comments.map(c => `
+      <div class="card" style="margin-bottom:12px">
+        <div style="display:flex;gap:10px">
+          <div style="width:36px;height:36px;background:linear-gradient(135deg,#9b7ed8,#b8a0e8);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${c.user.avatar}</div>
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:13px;font-weight:700">${c.user.name}</div>
+              <div style="font-size:11px;color:var(--text3)">${c.time}</div>
+            </div>
+            <div style="font-size:13px;color:var(--text);line-height:1.6;margin:6px 0">${c.content}</div>
+            <div style="display:flex;gap:16px">
+              <span style="font-size:12px;color:var(--text3);cursor:pointer" onclick="UI.toast.success('点赞成功')"><i data-lucide="heart" class="lucide" style="width:14px;height:14px"></i> ${c.likes}</span>
+              <span style="font-size:12px;color:var(--text3);cursor:pointer" onclick="UI.toast.info('回复功能')"><i data-lucide="message-circle" class="lucide" style="width:14px;height:14px"></i> 回复</span>
+            </div>
+            ${c.replies && c.replies.length > 0 ? c.replies.map(r => `
+              <div style="margin-top:12px;padding:10px 12px;background:var(--bg-secondary);border-radius:10px">
+                <div style="display:flex;gap:8px">
+                  <div style="width:28px;height:28px;background:linear-gradient(135deg,#5ba3d9,#7ec0e8);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">${r.user.avatar}</div>
+                  <div style="flex:1">
+                    <div style="font-size:12px;font-weight:700">${r.user.name}</div>
+                    <div style="font-size:12px;color:var(--text);line-height:1.5;margin:4px 0">${r.content}</div>
+                    <div style="font-size:11px;color:var(--text3)">${r.time} 路 <span style="cursor:pointer" onclick="UI.toast.success('点赞成功')">赞${r.likes||0}</span></div>
+                  </div>
+                </div>
+              </div>
+            `).join('') : ''}
+          </div>
+        </div>
+      </div>
+    `).join('')}
+  `;
+  renderIcons();
+}
+
+function renderSettings() {
+  const u = getCurrentUser();
+  document.getElementById('setting-name').value = u.name;
+  document.getElementById('setting-bio').value = u.bio;
+}
+
+function renderMaterialsList() {
+  const materials = [
+    {formula:'MoS2',name:'二硫化钼',bandgap:'1.8 eV',type:'半导体',icon:'layers'},
+    {formula:'Graphene',name:'石墨烯',bandgap:'0 eV',type:'半金属',icon:'hexagon'},
+    {formula:'WTe2',name:'二碲化钨',bandgap:'0 eV',type:'拓扑半金属',icon:'magnet'},
+    {formula:'h-BN',name:'六方氮化硼',bandgap:'5.9 eV',type:'绝缘体',icon:'hexagon'},
+    {formula:'Bi2Se3',name:'硒化铋',bandgap:'0.3 eV',type:'拓扑绝缘体',icon:'shield'},
+    {formula:'FeSe',name:'硒化亚铁',bandgap:'0 eV',type:'超导体',icon:'zap'}
+  ];
+  const el = document.getElementById('materials-list');
+  if (el) el.innerHTML = materials.map(m => {
+    return '<div class="list-item" onclick="navigateTo(\'page-results\')"><div class="list-item-icon" style="background:linear-gradient(135deg,#a0d0f0,#80bde0)"><i data-lucide="' + m.icon + '" class="lucide icon-white"></i></div><div class="list-item-content"><div class="list-item-title">' + m.formula + ' · ' + m.name + '</div><div class="list-item-sub">带隙 ' + m.bandgap + ' · ' + m.type + '</div></div><i data-lucide="chevron-right" class="lucide list-item-arrow"></i></div>';
+  }).join('');
+}
+
+// ===== AI对话 =====
+function showLessonCatalog() {
+  if (typeof LearningSystem !== 'undefined' && typeof LearningSystem.showCatalog === 'function') {
+    LearningSystem.showCatalog();
+  } else if (typeof UI !== 'undefined' && UI.dialog) {
+    UI.dialog.actionSheet({
+      title: '课程目录',
+      actions: [
+        { label: '第1课：DFT基本原理', icon: 'book-open', onClick: () => UI.toast.info('切换到第1课') },
+        { label: '第2课：Kohn-Sham方程', icon: 'book-open', onClick: () => UI.toast.info('切换到第2课') },
+        { label: '第3课：交换关联泛函', icon: 'book-open', onClick: () => UI.toast.info('切换到第3课') },
+        { label: '第4课：平面波基组', icon: 'book-open', onClick: () => UI.toast.info('切换到第4课') },
+        { label: '第5课：赝势方法', icon: 'book-open', onClick: () => UI.toast.info('切换到第5课') }
+      ]
+    });
+  } else {
+    showToast('课程目录：第1-5课');
+  }
+}
+function cancelJob(btn) {
+  if (typeof UI !== 'undefined' && UI.dialog) {
+    UI.dialog.confirm({
+      title: '取消任务',
+      message: '确定要取消当前运行中的计算任务吗？已使用的算力将按实际时长计费。',
+      confirmText: '确认取消',
+      cancelText: '继续运行',
+      onConfirm: () => {
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i data-lucide="loader" class="lucide"></i>取消中...'; renderIcons(); }
+        setTimeout(() => {
+          if (typeof JobManager !== 'undefined') {
+            const jobs = JobManager.jobs || [];
+            const running = jobs.find(j => j.status === 'running');
+            if (running) { running.status = 'cancelled'; }
+          }
+          if (typeof UI !== 'undefined') UI.toast.success('任务已取消');
+          else showToast('任务已取消');
+          goBack();
+        }, 1000);
+      }
+    });
+  } else {
+    showToast('任务已取消');
+    setTimeout(() => goBack(), 800);
+  }
+}
+function shareArticle() {
+  if (typeof UI !== 'undefined' && UI.dialog) {
+    UI.dialog.actionSheet({
+      title: '分享文章',
+      actions: [
+        { label: '复制链接', icon: 'link', onClick: () => { try { navigator.clipboard.writeText(window.location.href); } catch(e) {} UI.toast.success('链接已复制'); } },
+        { label: '分享到微信', icon: 'message-circle', onClick: () => UI.toast.info('请截图分享到微信') },
+        { label: '分享到微博', icon: 'twitter', onClick: () => UI.toast.info('正在打开微博分享...') },
+        { label: '生成海报', icon: 'image', onClick: () => UI.toast.success('分享海报已生成') },
+        { label: '保存为PDF', icon: 'file-text', onClick: () => UI.toast.success('PDF已保存') }
+      ]
+    });
+  } else {
+    showToast('分享功能：复制链接 / 微信 / 微博 / 海报');
+  }
+}
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+function clearChat() {
+  const container = document.getElementById('chat-messages');
+  if (!container) return;
+  container.innerHTML = `<div class="chat-message ai"><div class="chat-avatar" style="background:linear-gradient(135deg,var(--primary),var(--primary2))"><i data-lucide="brain" class="lucide icon-white"></i></div><div class="chat-bubble">对话已清空。我是UniSci AI助手，可以帮你进行科学计算、数据分析、代码生成和文献检索。请问有什么可以帮你的？</div></div>`;
+  renderIcons();
+}
+function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const safeText = escapeHtml(text);
+  const container = document.getElementById('chat-messages');
+  container.innerHTML += `<div class="chat-message user"><div class="chat-avatar" style="background:linear-gradient(135deg,var(--blue),var(--blue2))"><i data-lucide="user" class="lucide icon-white"></i></div><div class="chat-bubble">${safeText}</div></div>`;
+  input.value = '';
+  renderIcons();
+  setTimeout(() => {
+    container.innerHTML += `<div class="chat-message ai"><div class="chat-avatar" style="background:linear-gradient(135deg,var(--primary),var(--primary2))"><i data-lucide="brain" class="lucide icon-white"></i></div><div class="chat-bubble">收到你的问题："${safeText}"。我正在分析相关数据和文献，请稍候...（这是AI回复的模拟演示）</div></div>`;
+    renderIcons();
+    container.scrollTop = container.scrollHeight;
+  }, 800);
+}
+
+// ===== 初始化 =====
+window.addEventListener('load', function() {
+  if (typeof renderAll === 'function') renderAll();
+  // 优化：使用requestAnimationFrame节流进度条动画，避免每秒全局DOM查询
+  let progressAnimating = false;
+  function animateProgressBars() {
+    if (progressAnimating) return;
+    progressAnimating = true;
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.progress-fill').forEach(bar => {
+        const w = parseFloat(bar.style.width);
+        if (w > 0 && w < 95) {
+          bar.style.width = Math.min(95, w + 0.03) + '%';
+        }
+      });
+      progressAnimating = false;
+    });
+  }
+  setInterval(animateProgressBars, 1000);
+});
+
+// ===== B组功能闭环：6个缺失函数实现 =====
+
+// 1. 显示课程目录
+function showLessonCatalog() {
+  const lessons = [
+    {id:1, title:'第1课：DFT基本原理', duration:'45分钟', completed:true},
+    {id:2, title:'第2课：Kohn-Sham方程', duration:'50分钟', completed:true},
+    {id:3, title:'第3课：交换关联泛函', duration:'40分钟', completed:false},
+    {id:4, title:'第4课：平面波基组', duration:'55分钟', completed:false},
+    {id:5, title:'第5课：VASP实战', duration:'60分钟', completed:false},
+  ];
+  const html = lessons.map(l => `
+    <div class="list-item" onclick="switchLesson(${l.id}, '${l.title}')" style="cursor:pointer">
+      <div class="list-item-icon" style="background:${l.completed?'#6ee7b7':'#e5e7eb'}">
+        <i data-lucide="${l.completed?'check-circle':'circle'}" class="lucide" style="width:16px;height:16px"></i>
+      </div>
+      <div class="list-item-content">
+        <div class="list-item-title">${l.title}</div>
+        <div class="list-item-subtitle">${l.duration} ${l.completed?'· 已完成':''}</div>
+      </div>
+    </div>`).join('');
+  if (typeof UI !== 'undefined' && UI.dialog) {
+    UI.dialog.bottomSheet({title:'课程目录', content:html});
+  } else {
+    showToast('课程目录：共5课');
+  }
+}
+
+function switchLesson(id, title) {
+  document.getElementById('lesson-title').textContent = title;
+  showToast('已切换到：' + title);
+  if (typeof UI !== 'undefined' && UI.dialog) UI.dialog.close();
+}
+
+// 2. 提交作业
+function submitHomework(btn) {
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader" class="lucide spin"></i>提交中...';
+  setTimeout(() => {
+    btn.innerHTML = '<i data-lucide="check" class="lucide"></i>已提交';
+    btn.style.background = '#6ee7b7';
+    showToast('作业已提交，AI正在批改中...');
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="send" class="lucide"></i>提交答案';
+      btn.style.background = '';
+    }, 3000);
+  }, 1500);
+}
+
+// 3. 清空聊天
+function clearChat() {
+  if (typeof UI !== 'undefined' && UI.dialog) {
+    UI.dialog.confirm({
+      title: '清空对话',
+      message: '确定要清空当前对话记录吗？此操作不可撤销。',
+      onConfirm: () => {
+        const container = document.getElementById('chat-messages');
+        if (container) container.innerHTML = '';
+        showToast('对话已清空');
+      }
+    });
+  } else {
+    const container = document.getElementById('chat-messages');
+    if (container) container.innerHTML = '';
+    showToast('对话已清空');
+  }
+}
+
+// 4. 筛选通知
+function filterNotifications(type, btn) {
+  // 更新tab激活状态
+  const tabs = btn.parentElement.querySelectorAll('.tab-item');
+  tabs.forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  // 筛选通知列表
+  const items = document.querySelectorAll('#notification-list .notification-item');
+  let visible = 0;
+  items.forEach(item => {
+    const itemType = item.dataset.type || 'all';
+    if (type === 'all' || itemType === type) {
+      item.style.display = '';
+      visible++;
+    } else {
+      item.style.display = 'none';
+    }
+  });
+  if (visible === 0) {
+    const list = document.getElementById('notification-list');
+    if (list) list.innerHTML = '<div class="empty-state"><div class="empty-text">暂无通知</div></div>';
+  }
+}
+
+// 5. 分享文章
+function shareArticle() {
+  const html = `
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="list-item" onclick="copyArticleLink()" style="cursor:pointer">
+        <div class="list-item-icon" style="background:#a0d0f0"><i data-lucide="link" class="lucide icon-white"></i></div>
+        <div class="list-item-content"><div class="list-item-title">复制链接</div></div>
+      </div>
+      <div class="list-item" onclick="showToast('请截图分享到微信')" style="cursor:pointer">
+        <div class="list-item-icon" style="background:#6ee7b7"><i data-lucide="message-circle" class="lucide icon-white"></i></div>
+        <div class="list-item-content"><div class="list-item-title">微信好友</div></div>
+      </div>
+      <div class="list-item" onclick="showToast('正在打开微博分享...')" style="cursor:pointer">
+        <div class="list-item-icon" style="background:#ffb8a0"><i data-lucide="share-2" class="lucide icon-white"></i></div>
+        <div class="list-item-content"><div class="list-item-title">微博</div></div>
+      </div>
+      <div class="list-item" onclick="showToast('分享海报已生成')" style="cursor:pointer">
+        <div class="list-item-icon" style="background:#c8b0f0"><i data-lucide="image" class="lucide icon-white"></i></div>
+        <div class="list-item-content"><div class="list-item-title">生成海报</div></div>
+      </div>
+    </div>`;
+  if (typeof UI !== 'undefined' && UI.dialog) {
+    UI.dialog.bottomSheet({title:'分享文章', content:html});
+  } else {
+    showToast('分享功能：复制链接 / 微信 / 微博 / 海报');
+  }
+}
+
+function copyArticleLink() {
+  const url = window.location.href;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => showToast('链接已复制'));
+  } else {
+    showToast('链接已复制');
+  }
+  if (typeof UI !== 'undefined' && UI.dialog) UI.dialog.close();
+}
+
+// 6. 运行全部Notebook单元格
+function runAllNotebookCells(btn) {
+  if (typeof NotebookEditor !== 'undefined' && NotebookEditor.runAll) {
+    NotebookEditor.runAll();
+    return;
+  }
+  // 降级实现：模拟运行所有单元格
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader" class="lucide spin icon-white"></i>运行中...';
+  const cells = document.querySelectorAll('.nb-cell');
+  let index = 0;
+  const runNext = () => {
+    if (index >= cells.length) {
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="play" class="lucide icon-white"></i>运行全部';
+      showToast(`已运行 ${cells.length} 个单元格`);
+      return;
+    }
+    const cell = cells[index];
+    const status = cell.querySelector('.nb-cell-header span:last-child');
+    if (status) status.textContent = '运行中...';
+    setTimeout(() => {
+      if (status) status.textContent = '已运行';
+      index++;
+      runNext();
+    }, 300);
+  };
+  runNext();
+}
+</script>
+<!-- UniSci Core System (模块10: 通用功能系统) -->
+<script src="materials-enhancements.js?v=20260827_1730"></script>
+<script src="notebook-v2.js?v=20260827_1720"></script>
+<script src="knowledge-graph-v2.js?v=20260827_1720"></script>
+<script src="workflow-editor.js?v=20260827_1720"></script>
+<script src="labs.js?v=20260827_1720"></script>
+<script src="terminology.js?v=20260827_1720"></script>
+<script src="core.js?v=20260827_1720"></script>
+<!-- UniSci User System (模块9: 用户体系) -->
+<script src="user.js?v=20260827_1720"></script>
+<!-- UniSci Compute System (模块2: 计算任务系统) -->
+<script src="compute.js?v=20260827_1720"></script>
+<!-- UniSci Notebook System (模块5: Notebook系统) -->
+<script src="notebook.js?v=20260827_1720"></script>
+<!-- UniSci Workflow System (模块6: 工作流系统 -->
+<script src="workflow.js?v=20260827_1720"></script>
+<script src="workflow-patch.js?v=20260827_1740"></script>
+<script src="workflow-canvas.js?v=20260827_1720"></script>
+<!-- UniSci Molecule System (模块7: 分子建模系统) -->
+<script src="molecule.js?v=20260827_1720"></script>
+<!-- UniSci Materials System (模块8: 材料数据库系统 -->
+<script src="materials.js?v=20260827_1720"></script>
+<!-- UniSci Enhancements (全面功能增强) -->
+<script src="enhancements.js?v=20260827_1720"></script>
+<script src="knowledge-graph-dynamic.js?v=20260827_1720"></script>
+<script src="feature-closures.js?v=20260827_1720"></script>
+<script src="performance-optimizer.js?v=20260827_1720"></script>
+</body>
+</html>
+

@@ -1,0 +1,89 @@
+workflows:
+  ios-ipa:
+    name: iOS IPA Build
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      groups:
+        - apple_credentials
+      vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+        BUNDLE_ID: "com.oneos.app"
+      node: 18
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+      - name: Build frontend
+        script: |
+          npm run build
+      - name: Sync Capacitor iOS
+        script: |
+          npx cap sync ios
+      - name: Set up code signing
+        script: |
+          xcode-project use-profiles
+      - name: Build IPA
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      email:
+        recipients:
+          - mch200844968@hotmail.com
+        notify:
+          success: true
+          failure: true
+
+  ios-no-sign:
+    name: iOS No-Sign Build (for AltStore)
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+      node: 18
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+      - name: Build frontend
+        script: |
+          npm run build
+      - name: Add iOS platform
+        script: |
+          npx cap add ios || true
+          npx cap sync ios
+      - name: Build unsigned IPA
+        script: |
+          cd ios/App
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath $CM_BUILD_DIR/App.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            clean archive
+          mkdir -p $CM_BUILD_DIR/Payload
+          cp -R $CM_BUILD_DIR/App.xcarchive/Products/Applications/App.app $CM_BUILD_DIR/Payload/
+          cd $CM_BUILD_DIR
+          zip -r OneOS-unsigned.ipa Payload
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - "**/*.ipa"
+    publishing:
+      email:
+        recipients:
+          - mch200844968@hotmail.com
+        notify:
+          success: true
+          failure: true

@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# OneOS pre-commit 钩子
+# 维护者：A03 史密斯（代码审查官）+ A06 林克（运维主管）
+# 作用：提交前自动运行代码检查和测试
+
+echo "🔍 OneOS pre-commit 检查开始..."
+
+# 运行 lint-staged（对暂存的文件运行检查）
+npx lint-staged
+
+# 运行单元测试（快速模式，只运行受影响的测试）
+echo "🧪 运行单元测试..."
+npm run test -- --run --reporter=dot
+
+if [ $? -ne 0 ]; then
+  echo "❌ 单元测试未通过，请修复后再提交"
+  exit 1
+fi
+
+echo "✅ pre-commit 检查通过"

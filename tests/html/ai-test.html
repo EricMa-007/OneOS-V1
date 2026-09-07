@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OneOS V2 - AI 服务测试</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+      background: linear-gradient(160deg, #EEF2FF 0%, #F0F7FF 35%, #FFF5F7 70%, #F0FCF8 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #2D3436;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 {
+      font-size: 28px; font-weight: 700; margin-bottom: 8px;
+      background: linear-gradient(135deg, #7C6FF0, #4ECDC4);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .subtitle { color: #5A6577; margin-bottom: 24px; font-size: 14px; }
+    .card {
+      background: rgba(255,255,255,0.9); border-radius: 16px; padding: 20px;
+      margin-bottom: 16px; box-shadow: 0 4px 16px rgba(45,55,72,0.06);
+      border: 1px solid rgba(255,255,255,0.9);
+    }
+    .card h2 { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
+    .btn {
+      display: inline-block; padding: 8px 16px; border: none; border-radius: 10px;
+      font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin: 4px;
+    }
+    .btn-primary { background: linear-gradient(135deg, #9B8EF7, #7C6FF0); color: #fff; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(124,111,240,0.3); }
+    .btn-secondary { background: rgba(45,55,72,0.06); color: #2D3748; }
+    .btn-secondary:hover { background: rgba(45,55,72,0.1); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    input, textarea, select {
+      width: 100%; padding: 10px 14px; border: 1px solid rgba(45,55,72,0.1);
+      border-radius: 10px; font-size: 14px; font-family: inherit;
+      background: rgba(255,255,255,0.8); margin-bottom: 10px;
+    }
+    input:focus, textarea:focus { outline: none; border-color: #7C6FF0; }
+    .log {
+      background: #1a1a2e; color: #a8e6cf; padding: 16px; border-radius: 12px;
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6;
+      max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+    }
+    .log .info { color: #88d8f7; }
+    .log .success { color: #a8e6cf; }
+    .log .error { color: #ff8b94; }
+    .log .warn { color: #ffd93d; }
+    .chat-box {
+      background: rgba(255,255,255,0.7); border-radius: 12px; padding: 16px;
+      max-height: 400px; overflow-y: auto; margin-bottom: 12px;
+    }
+    .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 10px; max-width: 85%; }
+    .msg.user { background: linear-gradient(135deg, #9B8EF7, #7C6FF0); color: #fff; margin-left: auto; }
+    .msg.assistant { background: rgba(45,55,72,0.06); color: #2D3748; }
+    .status-badge {
+      display: inline-block; padding: 4px 10px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+    }
+    .status-online { background: rgba(108,203,119,0.15); color: #27AE60; }
+    .status-offline { background: rgba(255,138,128,0.15); color: #E53E3E; }
+    .model-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .model-tag {
+      padding: 6px 12px; background: rgba(124,111,240,0.1); color: #7C6FF0;
+      border-radius: 20px; font-size: 12px; font-weight: 600;
+    }
+    .row { display: flex; gap: 10px; align-items: center; }
+    .row > * { flex: 1; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>OneOS V2 - AI 服务测试</h1>
+    <p class="subtitle">Ollama 本地大模型集成 · 连接检测 · 模型管理 · 聊天/流式 · 嵌入 · RAG</p>
+
+    <!-- 连接配置 -->
+    <div class="card">
+      <h2>🔌 连接配置</h2>
+      <div class="row">
+        <input type="text" id="baseUrl" value="http://localhost:11434" placeholder="Ollama 服务地址">
+        <button class="btn btn-primary" onclick="testConnection()">检测连接</button>
+      </div>
+      <div id="connStatus" style="margin-top:10px;">
+        <span class="status-badge status-offline">未检测</span>
+      </div>
+    </div>
+
+    <!-- 模型管理 -->
+    <div class="card">
+      <h2>📦 模型管理</h2>
+      <div class="row">
+        <button class="btn btn-primary" onclick="loadModels()">获取模型列表</button>
+        <input type="text" id="pullModelName" placeholder="要拉取的模型名，如 llama3" style="flex:2;">
+        <button class="btn btn-secondary" onclick="pullModel()">拉取模型</button>
+      </div>
+      <div id="modelList" class="model-list"></div>
+      <div id="pullProgress" style="margin-top:10px; font-size:13px; color:#5A6577;"></div>
+    </div>
+
+    <!-- 聊天测试 -->
+    <div class="card">
+      <h2>💬 聊天测试</h2>
+      <div class="row">
+        <select id="chatModel">
+          <option value="">使用默认模型</option>
+        </select>
+        <select id="streamMode">
+          <option value="true">流式输出</option>
+          <option value="false">非流式</option>
+        </select>
+      </div>
+      <div class="chat-box" id="chatBox">
+        <div class="msg assistant">你好！我是 OneOS AI 助手，有什么可以帮你的？</div>
+      </div>
+      <div class="row">
+        <input type="text" id="chatInput" placeholder="输入消息..." onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="btn btn-primary" onclick="sendChat()">发送</button>
+        <button class="btn btn-secondary" onclick="clearChat()">清空</button>
+      </div>
+    </div>
+
+    <!-- 文本生成 -->
+    <div class="card">
+      <h2>✍️ 文本生成</h2>
+      <textarea id="genPrompt" rows="3" placeholder="输入提示词...">写一首关于秋天的短诗</textarea>
+      <button class="btn btn-primary" onclick="testGenerate()">生成</button>
+      <div id="genResult" style="margin-top:10px; padding:12px; background:rgba(45,55,72,0.04); border-radius:10px; display:none;"></div>
+    </div>
+
+    <!-- 嵌入向量 -->
+    <div class="card">
+      <h2>🔢 嵌入向量</h2>
+      <input type="text" id="embedText" value="OneOS 是一个灵魂级个人操作系统" placeholder="输入文本">
+      <button class="btn btn-primary" onclick="testEmbed()">生成嵌入</button>
+      <div id="embedResult" style="margin-top:10px; font-size:12px; color:#5A6577; display:none;"></div>
+    </div>
+
+    <!-- 日志 -->
+    <div class="card">
+      <h2>📋 操作日志</h2>
+      <div class="log" id="log">等待操作...</div>
+    </div>
+  </div>
+
+  <script src="src/ai/ollama-service.js"></script>
+  <script>
+    let chatHistory = [{ role: 'system', content: '你是 OneOS 的 AI 助手，回答简洁专业。' }];
+
+    function log(msg, type = 'info') {
+      const el = document.getElementById('log');
+      const time = new Date().toLocaleTimeString();
+      const prefix = { info: 'ℹ️', success: '✅', error: '❌', warn: '⚠️' }[type] || '';
+      el.innerHTML += `\n<span class="${type}">[${time}] ${prefix} ${msg}</span>`;
+      el.scrollTop = el.scrollHeight;
+    }
+
+    // 连接检测
+    async function testConnection() {
+      const baseUrl = document.getElementById('baseUrl').value;
+      OllamaService.configure({ baseUrl });
+      log(`检测连接: ${baseUrl}...`);
+      try {
+        const result = await OllamaService.checkConnection();
+        if (result.available) {
+          document.getElementById('connStatus').innerHTML =
+            `<span class="status-badge status-online">在线</span> <span style="font-size:13px;color:#5A6577;">${result.message}</span>`;
+          log(`连接成功: ${result.message}`, 'success');
+          // 自动加载模型列表
+          loadModels();
+        } else {
+          document.getElementById('connStatus').innerHTML =
+            `<span class="status-badge status-offline">离线</span> <span style="font-size:13px;color:#5A6577;">${result.message}</span>`;
+          log(`连接失败: ${result.message}`, 'error');
+        }
+      } catch (e) {
+        log(`检测异常: ${e.message}`, 'error');
+      }
+    }
+
+    // 模型列表
+    async function loadModels() {
+      log('获取模型列表...');
+      try {
+        const models = await OllamaService.listModels();
+        const listEl = document.getElementById('modelList');
+        const selectEl = document.getElementById('chatModel');
+        listEl.innerHTML = '';
+        selectEl.innerHTML = '<option value="">使用默认模型</option>';
+        models.forEach(m => {
+          const sizeMB = (m.size / 1024 / 1024).toFixed(0);
+          listEl.innerHTML += `<span class="model-tag">${m.name} (${sizeMB}MB)</span>`;
+          selectEl.innerHTML += `<option value="${m.name}">${m.name}</option>`;
+        });
+        log(`获取到 ${models.length} 个模型`, 'success');
+      } catch (e) {
+        log(`获取模型失败: ${e.message}`, 'error');
+      }
+    }
+
+    // 拉取模型
+    async function pullModel() {
+      const name = document.getElementById('pullModelName').value.trim();
+      if (!name) { log('请输入模型名称', 'warn'); return; }
+      log(`开始拉取模型: ${name}...`);
+      try {
+        await OllamaService.pullModel(name, (progress) => {
+          const pct = progress.percent ? `${progress.percent}%` : '';
+          document.getElementById('pullProgress').textContent =
+            `${progress.status} ${pct} (${progress.completed || 0}/${progress.total || '?'})`;
+        });
+        log(`模型 ${name} 拉取完成`, 'success');
+        loadModels();
+      } catch (e) {
+        log(`拉取失败: ${e.message}`, 'error');
+      }
+    }
+
+    // 聊天
+    async function sendChat() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const stream = document.getElementById('streamMode').value === 'true';
+      const model = document.getElementById('chatModel').value;
+
+      // 添加用户消息
+      addMsg('user', text);
+      input.value = '';
+      chatHistory.push({ role: 'user', content: text });
+
+      // 添加助手消息占位
+      const assistantMsg = addMsg('assistant', '');
+      assistantMsg.id = 'currentAssistant';
+
+      log(`发送消息 (stream=${stream})...`);
+
+      try {
+        const options = model ? { model } : {};
+        if (stream) {
+          await OllamaService.chatStream(chatHistory, (token, full) => {
+            assistantMsg.textContent = full;
+          }, options);
+        } else {
+          const result = await OllamaService.chat(chatHistory, options);
+          assistantMsg.textContent = result.content;
+        }
+        chatHistory.push({ role: 'assistant', content: assistantMsg.textContent });
+        log('回复完成', 'success');
+      } catch (e) {
+        assistantMsg.textContent = `[错误] ${e.message}`;
+        log(`聊天失败: ${e.message}`, 'error');
+      }
+    }
+
+    function addMsg(role, text) {
+      const box = document.getElementById('chatBox');
+      const div = document.createElement('div');
+      div.className = `msg ${role}`;
+      div.textContent = text;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+      return div;
+    }
+
+    function clearChat() {
+      document.getElementById('chatBox').innerHTML =
+        '<div class="msg assistant">你好！我是 OneOS AI 助手，有什么可以帮你的？</div>';
+      chatHistory = [{ role: 'system', content: '你是 OneOS 的 AI 助手，回答简洁专业。' }];
+      log('聊天已清空');
+    }
+
+    // 文本生成
+    async function testGenerate() {
+      const prompt = document.getElementById('genPrompt').value;
+      const resultEl = document.getElementById('genResult');
+      resultEl.style.display = 'block';
+      resultEl.textContent = '生成中...';
+      log(`生成文本: "${prompt.slice(0, 30)}..."`);
+      try {
+        const result = await OllamaService.generate(prompt);
+        resultEl.textContent = result.response;
+        log('生成完成', 'success');
+      } catch (e) {
+        resultEl.textContent = `错误: ${e.message}`;
+        log(`生成失败: ${e.message}`, 'error');
+      }
+    }
+
+    // 嵌入向量
+    async function testEmbed() {
+      const text = document.getElementById('embedText').value;
+      const resultEl = document.getElementById('embedResult');
+      resultEl.style.display = 'block';
+      resultEl.textContent = '生成中...';
+      log(`生成嵌入向量: "${text.slice(0, 30)}..."`);
+      try {
+        const embedding = await OllamaService.embed(text);
+        const dim = embedding.length;
+        const preview = embedding.slice(0, 5).map(v => v.toFixed(4)).join(', ');
+        resultEl.textContent = `维度: ${dim}\n前5维: [${preview}, ...]`;
+        log(`嵌入完成，维度: ${dim}`, 'success');
+      } catch (e) {
+        resultEl.textContent = `错误: ${e.message}`;
+        log(`嵌入失败: ${e.message}`, 'error');
+      }
+    }
+
+    // 页面加载后自动检测连接
+    window.addEventListener('load', () => {
+      log('AI 服务测试页面已加载');
+      log('OllamaService 可用: ' + (typeof window.OllamaService !== 'undefined'));
+      setTimeout(testConnection, 500);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+{
+  "name": "OneOS · 个人知识操作系统",
+  "short_name": "OneOS",
+  "description": "每个人的第二大脑和数字生存操作系统",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8F9FC",
+  "theme_color": "#8B5CF6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "categories": ["productivity", "education", "utilities"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='38' fill='%238B5CF6'/><text x='96' y='130' font-size='96' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>O</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='102' fill='%238B5CF6'/><text x='256' y='347' font-size='256' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>O</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "新建笔记",
+      "short_name": "新建",
+      "description": "快速创建新笔记",
+      "url": "/?action=new-note",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect width='96' height='96' rx='19' fill='%2300CEC9'/><path d='M48 24v48M24 48h48' stroke='white' stroke-width='8' stroke-linecap='round'/></svg>",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "AI助手",
+      "short_name": "AI",
+      "description": "打开AI助手对话",
+      "url": "/?nav=ai",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect width='96' height='96' rx='19' fill='%23FD79A8'/><circle cx='48' cy='48' r='20' fill='none' stroke='white' stroke-width='6'/><circle cx='48' cy='48' r='6' fill='white'/></svg>",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "搜索",
+      "short_name": "搜索",
+      "description": "全局搜索",
+      "url": "/?nav=search",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect width='96' height='96' rx='19' fill='%230984E3'/><circle cx='42' cy='42' r='18' fill='none' stroke='white' stroke-width='6'/><line x1='56' y1='56' x2='72' y2='72' stroke='white' stroke-width='8' stroke-linecap='round'/></svg>",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "splash_pages": null,
+  "prefer_related_applications": false
+}

@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#c7e0f0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>UniSci 路 鍏ㄦ皯绉戝璁＄畻</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="mock-data.js"></script>
+<script src="api.js"></script>
+<script src="api-integration.js"></script>
+<script src="app-state.js"></script>
+<script src="data-sync.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg1:#b8d4e8;--bg2:#d4e8f5;--bg3:#e8f2fa;
+  --card:#fff;--card-shadow:0 8px 32px rgba(100,140,180,0.18),0 2px 8px rgba(100,140,180,0.08);
+  --primary:#ff6b4a;--primary2:#ff8c6b;--blue:#5ba3d9;--blue2:#7ec0e8;--blue-light:#e3f1fa;
+  --green:#5ccf8e;--green2:#7edda8;--purple:#9b7ed8;--purple2:#b8a0e8;
+  --yellow:#ffc857;--pink:#ff8fab;--teal:#5cc9c9;
+  --text:#2d3a4a;--text2:#5a6b7d;--text3:#8fa0b3;
+  --radius:24px;--radius-sm:16px;--radius-xs:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;
+  background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 40%,var(--bg3) 100%);
+  color:var(--text);min-height:100vh;overflow-x:hidden;padding-bottom:100px;position:relative}
+.lucide{width:20px;height:20px;stroke-width:2;flex-shrink:0;pointer-events:none!important}
+.icon-lg{width:26px;height:26px}.icon-xl{width:32px;height:32px}.icon-2xl{width:40px;height:40px}
+.icon-white{stroke:#fff}.icon-muted{stroke:var(--text3)}
+.icon-btn,.quick-item,.card,.nav-item,.ai-chip,.course-card,.new-task-card,.fab,.stat-card,.big-stat-card,.section-more,.list-item,.tab-item,.chip{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.icon-btn:active,.quick-item:active,.card:active,.nav-item:active,.ai-chip:active,.course-card:active,.new-task-card:active,.fab:active,.stat-card:active,.big-stat-card:active,.list-item:active,.tab-item:active{transform:scale(0.96)}
+
+.cloud{position:fixed;background:#fff;border-radius:50%;opacity:0.5;z-index:0;pointer-events:none;animation:float 8s ease-in-out infinite}
+.c1{width:80px;height:30px;top:60px;right:-20px}.c1::before{content:'';position:absolute;width:40px;height:40px;background:#fff;border-radius:50%;top:-20px;left:15px}
+.c2{width:60px;height:22px;top:200px;left:-15px;opacity:0.35;animation-delay:2s}.c2::before{content:'';position:absolute;width:30px;height:30px;background:#fff;border-radius:50%;top:-15px;left:10px}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+.header{position:relative;z-index:1;padding:20px 20px 8px}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:46px;height:46px;background:linear-gradient(135deg,var(--primary),var(--primary2));border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(255,107,74,0.35),inset 0 1px 0 rgba(255,255,255,0.3)}
+.logo-text{font-size:20px;font-weight:800;letter-spacing:-0.5px}
+.logo-sub{font-size:11px;color:var(--text3);font-weight:500;margin-top:1px}
+.header-actions{display:flex;gap:10px}
+.icon-btn{width:42px;height:42px;background:var(--card);border-radius:14px;border:none;display:flex;align-items:center;justify-content:center;box-shadow:var(--card-shadow);transition:all 0.2s;position:relative;color:var(--text2)}
+.badge-dot{position:absolute;top:9px;right:9px;width:8px;height:8px;background:var(--primary);border-radius:50%;border:2px solid var(--card)}
+
+/* 瀛愰〉闈㈠ご閮?*/
+.sub-header{display:flex;align-items:center;gap:12px;padding:16px 20px;position:relative;z-index:1}
+.back-btn{width:40px;height:40px;background:var(--card);border-radius:12px;border:none;display:flex;align-items:center;justify-content:center;box-shadow:var(--card-shadow);color:var(--text2)}
+.sub-title{font-size:18px;font-weight:800;flex:1}
+.sub-action{width:40px;height:40px;background:var(--card);border-radius:12px;border:none;display:flex;align-items:center;justify-content:center;box-shadow:var(--card-shadow);color:var(--text2)}
+
+.welcome-card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--card-shadow);position:relative;overflow:hidden;margin-bottom:16px}
+.welcome-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(91,163,217,0.15),transparent 70%);border-radius:50%}
+.welcome-row{display:flex;align-items:center;gap:14px;position:relative;z-index:1}
+.avatar{width:56px;height:56px;background:linear-gradient(135deg,var(--blue),var(--blue2));border-radius:18px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;font-weight:700;box-shadow:0 6px 16px rgba(91,163,217,0.3),inset 0 1px 0 rgba(255,255,255,0.3)}
+.avatar-purple{background:linear-gradient(135deg,var(--purple),var(--purple2));box-shadow:0 6px 16px rgba(155,126,216,0.3),inset 0 1px 0 rgba(255,255,255,0.3)}
+.welcome-text h2{font-size:20px;font-weight:800;margin-bottom:2px}
+.welcome-text p{font-size:13px;color:var(--text2)}
+.welcome-tag{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:4px 10px;background:var(--blue-light);color:var(--blue);border-radius:20px;font-size:11px;font-weight:600}
+.welcome-tag-purple{background:linear-gradient(135deg,#f0e8fa,#e4d6f5);color:var(--purple)}
+.welcome-tag-green{background:linear-gradient(135deg,#e0f5e8,#d0f0dc);color:var(--green)}
+
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat-card{background:var(--card);border-radius:var(--radius-sm);padding:14px 10px;text-align:center;box-shadow:var(--card-shadow);transition:transform 0.2s;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:3px 3px 0 0}
+.stat-card.blue::after{background:linear-gradient(90deg,var(--blue),var(--blue2))}
+.stat-card.green::after{background:linear-gradient(90deg,var(--green),var(--green2))}
+.stat-value{font-size:22px;font-weight:800;line-height:1.2}
+.stat-unit{font-size:12px;font-weight:600;color:var(--text3)}
+.stat-label{font-size:11px;color:var(--text3);margin-top:4px;font-weight:500}
+
+.container{padding:0 20px;position:relative;z-index:1}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;margin-top:4px}
+.section-title{font-size:17px;font-weight:800;display:flex;align-items:center;gap:10px}
+.section-title-icon{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.sti-orange{background:linear-gradient(135deg,#ffe0d6,#ffd0c0);color:var(--primary)}
+.sti-blue{background:linear-gradient(135deg,#d6ebf7,#c0e0f2);color:var(--blue)}
+.sti-green{background:linear-gradient(135deg,#d6f5e3,#c0edd4);color:var(--green)}
+.sti-purple{background:linear-gradient(135deg,#e8dff7,#d4c6f0);color:var(--purple)}
+.section-more{font-size:13px;color:var(--text3);font-weight:600;display:flex;align-items:center;gap:2px}
+
+.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.quick-item{display:flex;flex-direction:column;align-items:center;gap:8px}
+.quick-icon{width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;color:#fff;transition:all 0.2s;box-shadow:0 6px 14px rgba(100,140,180,0.15),inset 0 1px 0 rgba(255,255,255,0.4)}
+.quick-item:active .quick-icon{transform:scale(0.88) translateY(2px)}
+.qi-orange{background:linear-gradient(135deg,#ffb8a0,#ff9a7a)}
+.qi-blue{background:linear-gradient(135deg,#a0d0f0,#80bde0)}
+.qi-green{background:linear-gradient(135deg,#a0e8c0,#80dca8)}
+.qi-yellow{background:linear-gradient(135deg,#ffe0a0,#ffd070)}
+.qi-pink{background:linear-gradient(135deg,#ffb8c8,#ffa0b0)}
+.qi-teal{background:linear-gradient(135deg,#a0e0e0,#80d0d0)}
+.qi-purple{background:linear-gradient(135deg,#c8b0f0,#b090e8)}
+.qi-gray{background:linear-gradient(135deg,#d0d8e0,#b8c4d0)}
+.quick-label{font-size:11px;color:var(--text2);font-weight:600;text-align:center;line-height:1.3}
+
+.card{background:var(--card);border-radius:var(--radius);padding:18px;margin-bottom:12px;box-shadow:var(--card-shadow);transition:all 0.2s;position:relative;overflow:hidden}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.card-title{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.card-badge{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:700;display:flex;align-items:center;gap:5px}
+.badge-running{background:linear-gradient(135deg,#e0f5e8,#d0f0dc);color:#2a9d5a}
+.badge-queued{background:linear-gradient(135deg,#fff3d6,#ffe8b0);color:#c8880a}
+.badge-completed{background:linear-gradient(135deg,#e0ecf8,#d0e0f0);color:#3a7ab8}
+.badge-dot-icon{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.job-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:10px;font-weight:500;align-items:center}
+.job-meta span:first-child{display:flex;align-items:center;gap:5px}
+.progress-track{height:10px;background:#eef3f8;border-radius:5px;overflow:hidden;position:relative}
+.progress-fill{height:100%;border-radius:5px;position:relative;transition:width 0.5s}
+.progress-fill::after{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,0.4),transparent);border-radius:5px 5px 0 0}
+.pf-orange{background:linear-gradient(90deg,var(--primary),var(--primary2))}
+.pf-blue{background:linear-gradient(90deg,var(--blue),var(--blue2))}
+.pf-green{background:linear-gradient(90deg,var(--green),var(--green2))}
+.pf-purple{background:linear-gradient(90deg,var(--purple),var(--purple2))}
+
+.big-stat-card{background:linear-gradient(135deg,var(--card) 0%,#f8fbfe 100%);border-radius:var(--radius);padding:20px;margin-bottom:12px;box-shadow:var(--card-shadow);position:relative;overflow:hidden}
+.big-stat-card::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;background:radial-gradient(circle,rgba(255,107,74,0.1),transparent 70%);border-radius:50%}
+.big-stat-row{display:flex;align-items:flex-end;gap:8px;margin-bottom:8px;position:relative;z-index:1}
+.big-stat-number{font-size:42px;font-weight:900;line-height:1;letter-spacing:-2px}
+.big-stat-unit{font-size:16px;font-weight:700;color:var(--text3);padding-bottom:6px}
+.big-stat-label{font-size:13px;color:var(--text2);font-weight:600;position:relative;z-index:1;display:flex;align-items:center;gap:6px}
+.big-stat-bar{height:8px;background:#eef3f8;border-radius:4px;margin-top:12px;overflow:hidden}
+.big-stat-bar-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:4px}
+
+.ai-card{background:linear-gradient(135deg,#fff5f0 0%,#fff 60%);border-radius:var(--radius);padding:20px;margin-bottom:12px;box-shadow:var(--card-shadow);position:relative;overflow:hidden;border:1px solid rgba(255,107,74,0.1)}
+.ai-card::before{content:'';position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(255,107,74,0.15),transparent 70%);border-radius:50%}
+.ai-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;position:relative;z-index:1}
+.ai-avatar{width:48px;height:48px;background:linear-gradient(135deg,var(--primary),var(--primary2));border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 6px 16px rgba(255,107,74,0.3),inset 0 1px 0 rgba(255,255,255,0.3)}
+.ai-name{font-size:16px;font-weight:800}
+.ai-status{font-size:11px;color:var(--green);font-weight:600;display:flex;align-items:center;gap:5px;margin-top:2px}
+.ai-chips{display:flex;flex-wrap:wrap;gap:8px;position:relative;z-index:1}
+.ai-chip{font-size:12px;padding:8px 14px;background:#fff;border-radius:14px;color:var(--text2);font-weight:600;box-shadow:0 2px 8px rgba(100,140,180,0.08);border:1px solid #eef3f8;transition:all 0.2s;display:flex;align-items:center;gap:6px}
+
+.course-card{display:flex;gap:14px;align-items:center}
+.course-thumb{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;box-shadow:0 4px 12px rgba(100,140,180,0.15),inset 0 1px 0 rgba(255,255,255,0.3)}
+.ct-orange{background:linear-gradient(135deg,#ffd0b8,#ffb896)}
+.ct-blue{background:linear-gradient(135deg,#b8dcf0,#9ac8e8)}
+.ct-green{background:linear-gradient(135deg,#b8e8d0,#9adcb8)}
+.ct-purple{background:linear-gradient(135deg,#d0c0f0,#b8a0e8)}
+.ct-teal{background:linear-gradient(135deg,#b0e0e0,#90d0d0)}
+.course-info{flex:1;min-width:0}
+.course-name{font-size:14px;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.course-meta{font-size:12px;color:var(--text3);font-weight:500;display:flex;align-items:center;gap:6px}
+.course-progress-bar{height:6px;background:#eef3f8;border-radius:3px;margin-top:8px;overflow:hidden}
+.course-progress-fill{height:100%;border-radius:3px}
+.course-progress-text{font-size:11px;font-weight:700;margin-top:4px}
+
+.new-task-card{background:linear-gradient(135deg,var(--primary),var(--primary2));border-radius:var(--radius);padding:20px;margin-bottom:12px;box-shadow:0 8px 24px rgba(255,107,74,0.35);color:#fff;transition:all 0.2s;position:relative;overflow:hidden;display:flex;align-items:center;gap:14px}
+.new-task-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(255,255,255,0.2),transparent 70%);border-radius:50%}
+.new-task-icon{width:48px;height:48px;background:rgba(255,255,255,0.2);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:1;color:#fff}
+.new-task-text{position:relative;z-index:1;flex:1}
+.new-task-title{font-size:17px;font-weight:800;margin-bottom:3px;display:flex;align-items:center;gap:8px}
+.new-task-desc{font-size:13px;opacity:0.9;font-weight:500}
+
+/* 鍒楄〃椤?*/
+.list-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card);border-radius:var(--radius-sm);margin-bottom:8px;box-shadow:var(--card-shadow);transition:all 0.2s}
+.list-item-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.list-item-content{flex:1;min-width:0}
+.list-item-title{font-size:14px;font-weight:700;margin-bottom:2px}
+.list-item-sub{font-size:12px;color:var(--text3)}
+.list-item-arrow{color:var(--text3)}
+
+/* Tab鏍?*/
+.tab-bar{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+.tab-item{padding:8px 16px;background:var(--card);border-radius:12px;font-size:13px;font-weight:600;color:var(--text2);white-space:nowrap;box-shadow:var(--card-shadow);transition:all 0.2s;border:none}
+.tab-item.active{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff}
+
+/* 琛ㄥ崟 */
+.form-group{margin-bottom:16px}
+.form-label{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:8px;display:block}
+.form-input,.form-select{width:100%;padding:12px 16px;background:#f5f8fb;border:2px solid #e8eef4;border-radius:14px;font-size:14px;color:var(--text);outline:none;transition:all 0.2s;font-family:inherit}
+.form-input:focus,.form-select:focus{border-color:var(--primary);background:#fff}
+.form-textarea{width:100%;padding:12px 16px;background:#f5f8fb;border:2px solid #e8eef4;border-radius:14px;font-size:14px;color:var(--text);outline:none;transition:all 0.2s;font-family:inherit;min-height:100px;resize:vertical}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 14px;background:#f5f8fb;border:2px solid #e8eef4;border-radius:12px;font-size:13px;font-weight:600;color:var(--text2);transition:all 0.2s}
+.chip.selected{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border-color:transparent}
+
+/* 鎸夐挳 */
+.btn{padding:14px 24px;border-radius:16px;font-size:15px;font-weight:700;border:none;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;box-shadow:0 6px 16px rgba(255,107,74,0.35)}
+.btn-secondary{background:var(--card);color:var(--text);box-shadow:var(--card-shadow)}
+.btn:active{transform:scale(0.97)}
+
+/* AI瀵硅瘽 */
+.chat-container{padding:0 20px 20px;min-height:60vh}
+.chat-message{display:flex;gap:10px;margin-bottom:16px;max-width:85%}
+.chat-message.user{margin-left:auto;flex-direction:row-reverse}
+.chat-avatar{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.chat-bubble{padding:12px 16px;border-radius:16px;font-size:14px;line-height:1.6}
+.chat-message.ai .chat-bubble{background:var(--card);border-bottom-left-radius:6px;box-shadow:var(--card-shadow)}
+.chat-message.user .chat-bubble{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border-bottom-right-radius:6px}
+.chat-input-bar{position:fixed;bottom:100px;left:0;right:0;padding:12px 20px;background:rgba(255,255,255,0.95);backdrop-filter:blur(10px);display:flex;gap:10px;z-index:50}
+.chat-input{flex:1;padding:12px 16px;background:#f5f8fb;border:2px solid #e8eef4;border-radius:14px;font-size:14px;outline:none;font-family:inherit}
+.chat-send{width:44px;height:44px;background:linear-gradient(135deg,var(--primary),var(--primary2));border-radius:14px;border:none;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 12px rgba(255,107,74,0.3)}
+
+/* 鐭ヨ瘑鍥捐氨鑺傜偣 */
+.kg-container{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--card-shadow);min-height:400px;position:relative;overflow:hidden}
+.kg-node{position:absolute;padding:10px 16px;background:linear-gradient(135deg,var(--blue-light),#fff);border:2px solid var(--blue2);border-radius:12px;font-size:12px;font-weight:700;color:var(--blue);cursor:pointer;transition:all 0.2s}
+.kg-node:hover{transform:scale(1.1);box-shadow:0 4px 12px rgba(91,163,217,0.3)}
+.kg-node.center{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border-color:transparent;font-size:14px;padding:12px 20px}
+
+/* Notebook浠ｇ爜鍧?*/
+.nb-cell{background:var(--card);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;box-shadow:var(--card-shadow)}
+.nb-cell-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:11px;color:var(--text3);font-weight:600}
+.nb-code{background:#1e293b;color:#e2e8f0;padding:14px;border-radius:10px;font-family:'SF Mono',Consolas,monospace;font-size:12px;line-height:1.6;overflow-x:auto;white-space:pre}
+.nb-output{background:#f0f7ff;border-left:3px solid var(--blue);padding:12px;margin-top:10px;border-radius:0 8px 8px 0;font-size:13px;color:var(--text2)}
+
+/* 鏂囩珷璇︽儏 */
+.article-detail{background:var(--card);border-radius:var(--radius);padding:24px;box-shadow:var(--card-shadow)}
+.article-detail h1{font-size:22px;font-weight:800;margin-bottom:12px;line-height:1.4}
+.article-meta-row{display:flex;gap:16px;font-size:12px;color:var(--text3);margin-bottom:20px;flex-wrap:wrap}
+.article-body{font-size:15px;line-height:1.8;color:var(--text2)}
+.article-body p{margin-bottom:16px}
+.article-body h3{font-size:17px;font-weight:700;color:var(--text);margin:24px 0 12px}
+
+/* 鍒嗗瓙寤烘ā */
+.molecule-viewer{background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:var(--radius);height:300px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;margin-bottom:16px}
+.molecule-atom{position:absolute;width:24px;height:24px;border-radius:50%;box-shadow:0 0 20px currentColor}
+.molecule-bond{position:absolute;height:3px;background:rgba(255,255,255,0.3);transform-origin:left center}
+
+/* 绌虹姸鎬?*/
+.empty-state{text-align:center;padding:40px 20px}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:0.5}
+.empty-text{font-size:14px;color:var(--text3);font-weight:500}
+
+/* 鐢ㄦ埛鍒囨崲鍣?*/
+.user-switcher{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--card-shadow)}
+.user-switcher-title{font-size:13px;font-weight:700;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.user-list{display:flex;flex-direction:column;gap:8px}
+.user-option{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;transition:all 0.2s;border:2px solid transparent}
+.user-option.active{background:linear-gradient(135deg,#fff5f0,#fff);border-color:var(--primary)}
+.user-option-avatar{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;flex-shrink:0}
+.user-option-info{flex:1}
+.user-option-name{font-size:14px;font-weight:700}
+.user-option-role{font-size:11px;color:var(--text3)}
+.user-option-check{color:var(--primary);display:none}
+.user-option.active .user-option-check{display:block}
+
+/* 鏂囩珷鍗＄墖 */
+.article-card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:10px;box-shadow:var(--card-shadow);transition:all 0.2s}
+.article-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;margin-bottom:8px}
+.article-title{font-size:14px;font-weight:700;margin-bottom:8px;line-height:1.4}
+.article-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);align-items:center}
+.article-stats{display:flex;gap:12px}
+.article-stat{display:flex;align-items:center;gap:3px}
+
+/* Notebook鍗＄墖 */
+.notebook-card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:10px;box-shadow:var(--card-shadow);transition:all 0.2s;display:flex;align-items:center;gap:12px}
+.notebook-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.notebook-info{flex:1;min-width:0}
+.notebook-title{font-size:14px;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.notebook-meta{font-size:11px;color:var(--text3);display:flex;gap:10px}
+
+/* 宸ヤ綔娴佸崱鐗?*/
+.workflow-card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:10px;box-shadow:var(--card-shadow)}
+.workflow-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.workflow-name{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.workflow-steps{font-size:11px;color:var(--text3);margin-bottom:6px}
+.workflow-current{font-size:12px;color:var(--primary);font-weight:600;margin-bottom:8px}
+
+.bottom-nav{position:fixed;bottom:16px;left:16px;right:16px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:22px;display:flex;justify-content:space-around;padding:10px 8px;z-index:100;box-shadow:0 10px 40px rgba(100,140,180,0.25),0 2px 8px rgba(100,140,180,0.1);border:1px solid rgba(255,255,255,0.8)}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;border-radius:16px;transition:all 0.25s;position:relative;color:var(--text3)}
+.nav-item.active{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;box-shadow:0 4px 12px rgba(255,107,74,0.35)}
+.nav-label{font-size:10px;font-weight:700;transition:color 0.25s}
+
+.page{display:none;animation:fadeUp 0.3s cubic-bezier(0.16,1,0.3,1)}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.toast{position:fixed;top:30px;left:50%;transform:translateX(-50%) translateY(-20px);background:rgba(45,58,74,0.95);backdrop-filter:blur(10px);color:#fff;padding:12px 24px;border-radius:16px;font-size:14px;font-weight:600;z-index:1000;opacity:0;transition:all 0.3s;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,0.2);display:flex;align-items:center;gap:8px}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.fab{position:fixed;bottom:100px;right:20px;width:58px;height:58px;background:linear-gradient(135deg,var(--primary),var(--primary2));border-radius:20px;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 8px 24px rgba(255,107,74,0.4),inset 0 1px 0 rgba(255,255,255,0.3);z-index:99;border:none;transition:all 0.2s}
+
+/* 闅愯棌瀛愰〉闈㈢殑搴曢儴瀵艰埅 */
+.sub-page .bottom-nav{display:none}
+
+/* Notebook缂栬緫鍣ㄦ牱寮?*/
+.notebook-cell{background:var(--card);border-radius:var(--radius-sm);margin-bottom:12px;box-shadow:var(--card-shadow);border:2px solid transparent;transition:all 0.2s;overflow:hidden}
+.notebook-cell.selected{border-color:var(--primary);box-shadow:0 0 0 3px rgba(255,107,74,0.15)}
+.cell-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg-secondary);border-bottom:1px solid var(--border)}
+.cell-type-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px}
+.cell-type-badge.code{background:rgba(91,163,217,0.15);color:var(--blue)}
+.cell-type-badge.md{background:rgba(155,126,216,0.15);color:var(--purple)}
+.cell-exec-count{font-size:11px;color:var(--text3);font-family:monospace;margin-left:auto;margin-right:8px}
+.cell-actions{display:flex;gap:2px}
+.cell-btn{background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:6px;color:var(--text3);display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.cell-btn:hover{background:var(--border);color:var(--text)}
+.cell-btn:disabled{opacity:0.5;cursor:not-allowed}
+.cell-input{width:100%;border:none;outline:none;padding:12px;font-size:13px;line-height:1.6;background:transparent;resize:vertical;min-height:60px;font-family:'SF Mono',Consolas,monospace;color:var(--text)}
+.code-cell{background:#fafbfc;border-top:1px solid var(--border)}
+.markdown-cell{font-family:-apple-system,sans-serif;white-space:pre-wrap}
+.cell-output{padding:12px;background:#f8fafc;border-top:1px solid var(--border);font-size:12px;line-height:1.6}
+.cell-output pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:'SF Mono',Consolas,monospace;color:var(--text2)}
+.cell-output.error{background:#fef2f2}
+.loading-spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 椤甸潰鍒囨崲娣″叆鍔ㄧ敾 */
+.page{opacity:0;transform:translateY(8px);transition:opacity 0.25s ease,transform 0.25s ease}
+.page.active{opacity:1;transform:translateY(0)}
+
+/* 鍗＄墖鐐瑰嚮鍙嶉 */
+.card{transition:transform 0.15s ease,box-shadow 0.15s ease}
+.card:active{transform:scale(0.98)}
+
+/* 鎸夐挳鐐瑰嚮鍙嶉 */
+.btn{transition:transform 0.12s ease,opacity 0.12s ease}
+.btn:active{transform:scale(0.96);opacity:0.9}
+
+/* 鍐呭鍔犺浇娣″叆 */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeInUp 0.3s ease forwards}
+
+/* 绌虹姸鎬佹牱寮?*/
+.empty-state{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty-state .empty-icon{font-size:48px;margin-bottom:12px;opacity:0.5}
+.empty-state .empty-text{font-size:14px;line-height:1.6}
+
+/* 楠ㄦ灦灞忓姞杞?*/
+.skeleton{background:linear-gradient(90deg,var(--bg-secondary) 25%,var(--bg-tertiary) 50%,var(--bg-secondary) 75%);background-size:200% 100%;animation:skeleton 1.5s infinite;border-radius:8px}
+@keyframes skeleton{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Tab鍒囨崲杩囨浮 */
+.tab-item{transition:all 0.2s ease}
+.tab-item.active{transform:scale(1.02)}
+
+/* 杩涘害鏉″姩鐢?*/
+.course-progress-fill{transition:width 0.5s ease}
+</style>
+</head>
+<body>
+
+<div class="cloud c1"></div>
+<div class="cloud c2"></div>
+
+<div class="toast" id="toast"><i data-lucide="check-circle-2" class="lucide icon-white"></i><span id="toast-text"></span></div>
+
+<!-- ========== 棣栭〉 ========== -->
+<div class="page active" id="page-home">
+<div class="header">
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-icon"><i data-lucide="atom" class="lucide icon-xl icon-white"></i></div>
+      <div><div class="logo-text">UniSci</div><div class="logo-sub">鍏ㄦ皯绉戝璁＄畻骞冲彴</div></div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="navigateTo('page-search')"><i data-lucide="search" class="lucide"></i></button>
+      <button class="icon-btn" onclick="navigateTo('page-notifications')"><i data-lucide="bell" class="lucide"></i><span class="badge-dot"></span></button>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="welcome-card" id="welcome-card"></div>
+  <div class="stats-row" id="stats-row"></div>
+  <div class="section-header"><div class="section-title"><span class="section-title-icon sti-orange"><i data-lucide="zap" class="lucide"></i></span>蹇嵎鍔熻兘</div></div>
+  <div class="quick-grid">
+    <div class="quick-item" onclick="switchTab('compute')"><div class="quick-icon qi-orange"><i data-lucide="cpu" class="lucide icon-xl icon-white"></i></div><div class="quick-label">璁＄畻浠诲姟</div></div>
+    <div class="quick-item" onclick="navigateTo('page-notebook-list')"><div class="quick-icon qi-blue"><i data-lucide="notebook-pen" class="lucide icon-xl icon-white"></i></div><div class="quick-label">Notebook</div></div>
+    <div class="quick-item" onclick="navigateTo('page-ai-chat')"><div class="quick-icon qi-green"><i data-lucide="bot" class="lucide icon-xl icon-white"></i></div><div class="quick-label">AI鍔╂墜</div></div>
+    <div class="quick-item" onclick="navigateTo('page-materials')"><div class="quick-icon qi-yellow"><i data-lucide="flask-conical" class="lucide icon-xl icon-white"></i></div><div class="quick-label">鏉愭枡搴?/div></div>
+    <div class="quick-item" onclick="navigateTo('page-workflow-list')"><div class="quick-icon qi-pink"><i data-lucide="workflow" class="lucide icon-xl icon-white"></i></div><div class="quick-label">宸ヤ綔娴?/div></div>
+    <div class="quick-item" onclick="navigateTo('page-experiments')"><div class="quick-icon qi-teal"><i data-lucide="microscope" class="lucide icon-xl icon-white"></i></div><div class="quick-label">铏氭嫙瀹為獙</div></div>
+    <div class="quick-item" onclick="navigateTo('page-knowledge-graph')"><div class="quick-icon qi-purple"><i data-lucide="network" class="lucide icon-xl icon-white"></i></div><div class="quick-label">鐭ヨ瘑鍥捐氨</div></div>
+    <div class="quick-item" onclick="navigateTo('page-molecules')"><div class="quick-icon qi-gray"><i data-lucide="layout-grid" class="lucide icon-xl icon-white"></i></div><div class="quick-label">鏇村</div></div>
+  </div>
+  <div class="big-stat-card" id="gpu-card"></div>
+  <div class="section-header"><div class="section-title"><span class="section-title-icon sti-blue"><i data-lucide="bar-chart-3" class="lucide"></i></span>杩愯涓换鍔?/div><div class="section-more" onclick="switchTab('compute')">鍏ㄩ儴 <i data-lucide="chevron-right" class="lucide" style="width:14px;height:14px"></i></div></div>
+  <div id="home-running-jobs"></div>
+  <div class="section-header"><div class="section-title"><span class="section-title-icon sti-orange"><i data-lucide="brain-circuit" class="lucide"></i></span>AI 鏅鸿兘鍔╂墜</div></div>
+  <div class="ai-card" onclick="navigateTo('page-ai-chat')">
+    <div class="ai-header"><div class="ai-avatar"><i data-lucide="brain" class="lucide icon-xl icon-white"></i></div><div><div class="ai-name">UniSci AI 鍔╂墜</div><div class="ai-status"><span class="badge-dot-icon" style="background:var(--green)"></span>鍦ㄧ嚎 路 澶欰gent鍗忎綔</div></div></div>
+    <div class="ai-chips">
+      <span class="ai-chip"><i data-lucide="line-chart" class="lucide" style="width:14px;height:14px;color:var(--primary)"></i>鍒嗘瀽璁＄畻缁撴灉</span>
+      <span class="ai-chip"><i data-lucide="code-2" class="lucide" style="width:14px;height:14px;color:var(--blue)"></i>鐢熸垚璁＄畻浠ｇ爜</span>
+      <span class="ai-chip"><i data-lucide="book-open" class="lucide" style="width:14px;height:14px;color:var(--green)"></i>鏌ユ壘鐩稿叧鏂囩尞</span>
+    </div>
+  </div>
+  <div class="section-header"><div class="section-title"><span class="section-title-icon sti-purple"><i data-lucide="graduation-cap" class="lucide"></i></span>缁х画瀛︿範</div><div class="section-more" onclick="switchTab('learn')">鍏ㄩ儴 <i data-lucide="chevron-right" class="lucide" style="width:14px;height:14px"></i></div></div>
+  <div id="home-courses"></div>
+</div>
+</div>
+
+<!-- ========== 璁＄畻椤?========== -->
+<div class="page" id="page-compute">
+<div class="header"><div class="header-top"><div class="logo"><div class="logo-icon"><i data-lucide="cpu" class="lucide icon-xl icon-white"></i></div><div><div class="logo-text">璁＄畻涓績</div><div class="logo-sub">绠＄悊浣犵殑绉戝璁＄畻浠诲姟</div></div></div></div></div>
+<div class="container">
+  <div class="new-task-card" onclick="navigateTo('page-job-new')"><div class="new-task-icon"><i data-lucide="plus" class="lucide icon-xl icon-white"></i></div><div class="new-task-text"><div class="new-task-title">鏂板缓璁＄畻浠诲姟</div><div class="new-task-desc">鏀寔 DFT 路 MD 路 ML 路 鏈夐檺鍏?绛夊绉嶈绠?/div></div></div>
+  <div id="compute-filters"></div>
+  <div id="compute-job-list"></div>
+</div>
+</div>
+
+<!-- ========== 瀛︿範椤?========== -->
+<div class="page" id="page-learn">
+<div class="header"><div class="header-top"><div class="logo"><div class="logo-icon"><i data-lucide="book-open" class="lucide icon-xl icon-white"></i></div><div><div class="logo-text">瀛︿範涓績</div><div class="logo-sub">浠庡叆闂ㄥ埌鍓嶆部锛屽叏榫勭瀛︽暀鑲?/div></div></div></div></div>
+<div class="container">
+  <div class="tab-bar">
+    <button class="tab-item active" onclick="LearningSystem.setFilter('all')">鍏ㄩ儴</button>
+    <button class="tab-item" onclick="LearningSystem.setFilter('鏈')">鏈</button>
+    <button class="tab-item" onclick="LearningSystem.setFilter('楂樹腑')">涓</button>
+    <button class="tab-item" onclick="LearningSystem.setFilter('鍓嶆部')">鍓嶆部</button>
+  </div>
+  <div class="section-header"><div class="section-title"><span class="section-title-icon sti-orange"><i data-lucide="book-marked" class="lucide"></i></span>鎴戠殑璇剧▼</div></div>
+  <div id="learn-courses"></div>
+  <div class="section-header"><div class="section-title"><span class="section-title-icon sti-blue"><i data-lucide="star" class="lucide"></i></span>鎺ㄨ崘璇剧▼</div></div>
+  <div id="recommend-courses"></div>
+</div>
+</div>
+
+<!-- ========== AI椤?========== -->
+<div class="page" id="page-ai">
+<div class="header"><div class="header-top"><div class="logo"><div class="logo-icon"><i data-lucide="bot" class="lucide icon-xl icon-white"></i></div><div><div class="logo-text">AI 鏅鸿兘涓績</div><div class="logo-sub">AI Agent 路 鑷劧璇█缂栫▼ 路 鐭ヨ瘑鍥捐氨</div></div></div></div></div>
+<div class="container">
+  <div class="ai-card" onclick="navigateTo('page-ai-chat')">
+    <div class="ai-header"><div class="ai-avatar"><i data-lucide="brain" class="lucide icon-xl icon-white"></i></div><div><div class="ai-name">UniSci AI 鍔╂墜</div><div class="ai-status"><span class="badge-dot-icon" style="background:var(--green)"></span>鍦ㄧ嚎 路 澶欰gent鍗忎綔</div></div></div>
+    <div class="ai-chips">
+      <span class="ai-chip"><i data-lucide="users" class="lucide" style="width:14px;height:14px;color:var(--primary)"></i>缁勫缓鐮旂┒鍥㈤槦</span>
+      <span class="ai-chip"><i data-lucide="code-2" class="lucide" style="width:14px;height:14px;color:var(--blue)"></i>鐢熸垚璁＄畻浠ｇ爜</span>
+      <span class="ai-chip"><i data-lucide="network" class="lucide" style="width:14px;height:14px;color:var(--green)"></i>鐭ヨ瘑鍥捐氨闂瓟</span>
+      <span class="ai-chip"><i data-lucide="file-text" class="lucide" style="width:14px;height:14px;color:var(--purple)"></i>鑷姩鎾板啓璁烘枃</span>
+    </div>
+  </div>
+  <div class="section-header"><div class="section-title"><span class="section-title-icon sti-purple"><i data-lucide="zap" class="lucide"></i></span>AI 鑳藉姏</div></div>
+  <div class="quick-grid">
+    <div class="quick-item" onclick="navigateTo('page-ai-chat')"><div class="quick-icon qi-orange"><i data-lucide="users" class="lucide icon-xl icon-white"></i></div><div class="quick-label">澶欰gent</div></div>
+    <div class="quick-item" onclick="navigateTo('page-ai-chat')"><div class="quick-icon qi-blue"><i data-lucide="message-square-code" class="lucide icon-xl icon-white"></i></div><div class="quick-label">瀵硅瘽缂栫▼</div></div>
+    <div class="quick-item" onclick="navigateTo('page-knowledge-graph')"><div class="quick-icon qi-green"><i data-lucide="network" class="lucide icon-xl icon-white"></i></div><div class="quick-label">鐭ヨ瘑鍥捐氨</div></div>
+    <div class="quick-item" onclick="navigateTo('page-ai-chat')"><div class="quick-icon qi-yellow"><i data-lucide="file-text" class="lucide icon-xl icon-white"></i></div><div class="quick-label">鑷姩绉戠爺</div></div>
+  </div>
+  <div class="section-header"><div class="section-title"><span class="section-title-icon sti-blue"><i data-lucide="message-circle" class="lucide"></i></span>鏈€杩戝璇?/div></div>
+  <div id="ai-conversations"></div>
+</div>
+</div>
+
+<!-- ========== 鎴戠殑椤?========== -->
+<div class="page" id="page-profile">
+<div class="header">
+  <div class="header-top"><div class="logo"><div class="logo-icon"><i data-lucide="user-round" class="lucide icon-xl icon-white"></i></div><div><div class="logo-text">涓汉涓績</div></div></div><div style="display:flex;gap:8px"><button class="icon-btn" onclick="navigateTo('page-notifications')"><i data-lucide="bell" class="lucide"></i></button><button class="icon-btn" onclick="navigateTo('page-settings')"><i data-lucide="settings" class="lucide"></i></button></div></div>
+  <div class="welcome-card" style="margin-bottom:0" id="profile-welcome"></div>
+</div>
+<div class="container">
+  <div class="stats-row" id="profile-stats"></div>
+  
+  <!-- 8涓唴瀹瑰叆鍙ｇ綉鏍?-->
+  <div class="section-header"><div class="section-title" style="font-size:15px"><i data-lucide="layout-grid" class="lucide" style="width:16px;height:16px;color:var(--primary)"></i>鎴戠殑鍐呭</div></div>
+  <div class="quick-grid" id="profile-content-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px"></div>
+  
+  <!-- Tab鍒囨崲锛氬姩鎬?鎴愬氨/璧勬簮 -->
+  <div class="tab-bar" style="margin-bottom:16px">
+    <button class="tab-item profile-tab active" data-tab="activity" onclick="ProfileRenderer.switchTab('activity')">鍔ㄦ€?/button>
+    <button class="tab-item profile-tab" data-tab="achievement" onclick="ProfileRenderer.switchTab('achievement')">鎴愬氨</button>
+    <button class="tab-item profile-tab" data-tab="resource" onclick="ProfileRenderer.switchTab('resource')">璧勬簮</button>
+  </div>
+  <div id="profile-tabs-content"></div>
+  
+  <!-- 鐢ㄦ埛鍒囨崲鍣?-->
+  <div class="user-switcher" style="margin-top:20px"><div class="user-switcher-title"><i data-lucide="users" class="lucide" style="width:14px;height:14px"></i>鍒囨崲娴嬭瘯鐢ㄦ埛</div><div class="user-list" id="user-list"></div></div>
+  
+  <!-- 蹇嵎璁剧疆鍏ュ彛 -->
+  <div style="margin-top:20px">
+    <div class="list-item" onclick="navigateTo('page-settings')"><div class="list-item-icon" style="background:linear-gradient(135deg,#a0d0f0,#80bde0)"><i data-lucide="settings" class="lucide icon-white"></i></div><div class="list-item-content"><div class="list-item-title">璐︽埛璁剧疆</div><div class="list-item-sub">涓汉淇℃伅 路 瀹夊叏 路 鍋忓ソ 路 9澶ц缃垎缁?/div></div><i data-lucide="chevron-right" class="lucide list-item-arrow"></i></div>
+    <div class="list-item" onclick="navigateTo('page-article-publish')"><div class="list-item-icon" style="background:linear-gradient(135deg,#9b7ed8,#b8a0e8)"><i data-lucide="edit-3" class="lucide icon-white"></i></div><div class="list-item-content"><div class="list-item-title">鍙戝竷鏂囩珷</div><div class="list-item-sub">鍒嗕韩浣犵殑绉戠爺绗旇鍜岃瑙?/div></div><i data-lucide="chevron-right" class="lucide list-item-arrow"></i></div>
+    <div class="list-item" onclick="ProfileEnhancements.openHelp()"><div class="list-item-icon" style="background:linear-gradient(135deg,#a0e0e0,#80d0d0)"><i data-lucide="help-circle" class="lucide icon-white"></i></div><div class="list-item-content"><div class="list-item-title">甯姪涓庡弽棣?/div><div class="list-item-sub">鏂囨。 路 鏁欑▼ 路 鑱旂郴鎴戜滑</div></div><i data-lucide="chevron-right" class="lucide list-item-arrow"></i></div>
+  </div>
+</div>
+</div>
+
+<!-- ========== 瀛愰〉闈細浠诲姟璇︽儏 ========== -->
+<div class="page sub-page" id="page-job-detail">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title" id="job-detail-title">浠诲姟璇︽儏</div><button class="sub-action" onclick="JobDetailRenderer.refresh()"><i data-lucide="refresh-cw" class="lucide"></i></button></div>
+<div class="container" id="job-detail-content"></div>
+</div>
+
+<!-- ========== 瀛愰〉闈細鏂板缓浠诲姟 ========== -->
+<div class="page sub-page" id="page-job-new">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">鏂板缓璁＄畻浠诲姟</div></div>
+<div class="container" id="job-new-content"></div>
+</div>
+
+<!-- ========== 瀛愰〉闈細Notebook鍒楄〃 ========== -->
+<div class="page sub-page" id="page-notebook-list">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">鎴戠殑 Notebook</div><button class="sub-action" onclick="NotebookListRenderer.showNewMenu()"><i data-lucide="plus" class="lucide"></i></button></div>
+<div class="container">
+  <div id="notebook-tabs"></div>
+  <div id="notebook-toolbar"></div>
+  <div id="notebook-list-content"></div>
+</div>
+</div>
+
+<!-- ========== 瀛愰〉闈細Notebook璇︽儏 ========== -->
+<div class="page sub-page" id="page-notebook-detail">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title" id="notebook-title">Notebook</div><button class="sub-action" onclick="NotebookEditor.save()"><i data-lucide="save" class="lucide"></i></button></div>
+<div class="container" style="padding-bottom:80px">
+  <div id="notebook-toolbar-detail"></div>
+  <div id="notebook-cells"></div>
+  <div id="notebook-status" style="position:fixed;bottom:60px;left:0;right:0;padding:0 12px;z-index:50"></div>
+</div>
+</div>
+
+<!-- ========== 瀛愰〉闈細璇剧▼璇︽儏 ========== -->
+<div class="page sub-page" id="page-course-detail">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title" id="course-detail-title">璇剧▼璇︽儏</div></div>
+<div class="container" id="course-detail-content"></div>
+</div>
+
+<!-- ========== 瀛愰〉闈細璇炬椂瀛︿範 ========== -->
+<div class="page sub-page" id="page-lesson">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title" id="lesson-title">璇炬椂瀛︿範</div><button class="sub-action" onclick="showLessonCatalog()"><i data-lucide="list" class="lucide"></i></button></div>
+<div class="container">
+  <div class="card" style="background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;text-align:center;padding:40px 20px">
+    <i data-lucide="play-circle" class="lucide icon-2xl icon-white" style="width:64px;height:64px;opacity:0.8"></i>
+    <div style="font-size:16px;font-weight:700;margin-top:16px" id="lesson-video-title">瑙嗛鎾斁鍖哄煙</div>
+    <div style="font-size:13px;opacity:0.6;margin-top:6px">鐐瑰嚮鎾斁璇剧▼瑙嗛</div>
+  </div>
+  <div class="card"><div class="card-title" style="margin-bottom:12px"><i data-lucide="file-text" class="lucide" style="width:16px;height:16px;color:var(--blue)"></i>璇剧▼璁蹭箟</div>
+    <div style="font-size:14px;line-height:1.8;color:var(--text2)"><p>鏈妭璇剧▼涓昏浠嬬粛瀵嗗害娉涘嚱鐞嗚鐨勫熀鏈鏋讹紝鍖呮嫭Kohn-Sham鏂圭▼銆佷氦鎹㈠叧鑱旀硾鍑戒互鍙婂钩闈㈡尝鍩虹粍鐨勯€夋嫨銆?/p><p>閫氳繃鏈妭瀛︿範锛屼綘灏嗙悊瑙FT璁＄畻鐨勫熀鏈祦绋嬶紝骞惰兘澶熺嫭绔嬭缃竴涓畝鍗曠殑VASP璁＄畻浠诲姟銆?/p></div></div>
+  <div class="card"><div class="card-title" style="margin-bottom:12px"><i data-lucide="help-circle" class="lucide" style="width:16px;height:16px;color:var(--primary)"></i>璇惧悗缁冧範</div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:12px">1. 绠€杩癒ohn-Sham鏂圭▼鐨勭墿鐞嗘剰涔?/div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:12px">2. 姣旇緝LDA鍜孏GA娉涘嚱鐨勯€傜敤鍦烘櫙</div>
+    <button class="btn btn-secondary" onclick="submitHomework(this)"><i data-lucide="send" class="lucide"></i>鎻愪氦绛旀</button></div>
+</div>
+</div>
+
+<!-- ========== 瀛愰〉闈細宸ヤ綔娴佸垪琛?========== -->
+<div class="page sub-page" id="page-workflow-list">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">宸ヤ綔娴?/div><button class="sub-action" onclick="WorkflowListRenderer.showTemplateMarket()"><i data-lucide="plus" class="lucide"></i></button></div>
+<div class="container" style="padding-bottom:80px">
+  <div id="workflow-tabs"></div>
+  <div id="workflow-list"></div>
+</div>
+</div>
+
+<!-- ========== 瀛愰〉闈細宸ヤ綔娴佺紪杈戝櫒 ========== -->
+<div class="page sub-page" id="page-workflow-editor">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title" id="workflow-title">宸ヤ綔娴佺紪杈戝櫒</div><button class="sub-action" onclick="WorkflowListRenderer.showTemplateMarket()"><i data-lucide="layout-template" class="lucide"></i></button></div>
+<div class="container" style="padding-bottom:80px">
+  <div id="workflow-toolbar"></div>
+  <div class="card" style="padding:0;overflow:auto;min-height:400px;background:linear-gradient(135deg,#f8fbfe,#eef3f8)">
+    <div id="workflow-canvas"></div>
+  </div>
+  <div id="workflow-node-panel"></div>
+  <div id="workflow-log-panel"></div>
+</div>
+</div>
+
+<!-- ========== 瀛愰〉闈細鍒嗗瓙寤烘ā ========== -->
+<div class="page sub-page" id="page-molecules">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">鍒嗗瓙寤烘ā鍣?/div><button class="sub-action" onclick="MoleculeRenderer.showPresetList()"><i data-lucide="library" class="lucide"></i></button></div>
+<div class="container" style="padding-bottom:80px">
+  <div id="molecule-viewer" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:16px;box-shadow:var(--card-shadow)"></div>
+  <div id="molecule-info"></div>
+  <div id="molecule-toolbar"></div>
+</div>
+</div>
+
+<!-- ========== 瀛愰〉闈細璁＄畻缁撴灉 ========== -->
+<div class="page sub-page" id="page-results">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">璁＄畻缁撴灉</div><button class="sub-action" onclick="ResultsRenderer.shareResults()"><i data-lucide="share-2" class="lucide"></i></button></div>
+<div class="container" id="results-content"></div>
+</div>
+
+<!-- ========== 瀛愰〉闈細AI瀵硅瘽 ========== -->
+<div class="page sub-page" id="page-ai-chat">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">UniSci AI 鍔╂墜</div><button class="sub-action" onclick="clearChat()"><i data-lucide="trash-2" class="lucide"></i></button></div>
+<div class="chat-container" id="chat-messages">
+  <div class="chat-message ai"><div class="chat-avatar" style="background:linear-gradient(135deg,var(--primary),var(--primary2))"><i data-lucide="brain" class="lucide icon-white"></i></div><div class="chat-bubble">浣犲ソ锛佹垜鏄疷niSci AI鍔╂墜锛屽彲浠ュ府浣犺繘琛岀瀛﹁绠椼€佹暟鎹垎鏋愩€佷唬鐮佺敓鎴愬拰鏂囩尞妫€绱€傝闂湁浠€涔堝彲浠ュ府浣犵殑锛?/div></div>
+  <div class="chat-message user"><div class="chat-avatar" style="background:linear-gradient(135deg,var(--blue),var(--blue2))"><i data-lucide="user" class="lucide icon-white"></i></div><div class="chat-bubble">甯垜鍒嗘瀽涓€涓婱oS鈧傜殑鑳藉甫缁撴瀯璁＄畻缁撴灉</div></div>
+  <div class="chat-message ai"><div class="chat-avatar" style="background:linear-gradient(135deg,var(--primary),var(--primary2))"><i data-lucide="brain" class="lucide icon-white"></i></div><div class="chat-bubble">鏍规嵁浣犵殑璁＄畻缁撴灉锛孧oS鈧傜殑甯﹂殭涓?.8 eV锛屽睘浜庣洿鎺ュ甫闅欏崐瀵间綋銆傚甯﹀簳鍜屼环甯﹂《鍧囦綅浜嶬鐐广€傛€佸瘑搴﹀垎鏋愭樉绀猴紝浠峰甫涓昏鐢盨鐨?p杞ㄩ亾璐＄尞锛屽甯︿富瑕佺敱Mo鐨?d杞ㄩ亾璐＄尞銆傚缓璁繘涓€姝ヨ绠楀厜瀛︽€ц川鍜岃浇娴佸瓙杩佺Щ鐜囥€?/div></div>
+</div>
+<div class="chat-input-bar"><input class="chat-input" id="chat-input" placeholder="杈撳叆浣犵殑闂..." onkeydown="if(event.key==='Enter')sendChat()"><button class="chat-send" onclick="sendChat()"><i data-lucide="send" class="lucide icon-white"></i></button></div>
+</div>
+
+<!-- ========== 瀛愰〉闈細鐭ヨ瘑鍥捐氨 ========== -->
+<div class="page sub-page" id="page-knowledge-graph">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">鐭ヨ瘑鍥捐氨</div><button class="sub-action" onclick="KnowledgeGraph.searchPrompt()"><i data-lucide="search" class="lucide"></i></button></div>
+<div class="container">
+  <div id="kg-container"></div>
+</div>
+</div>
+
+<!-- ========== 瀛愰〉闈細鏉愭枡搴?========== -->
+<div class="page sub-page" id="page-materials">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">鏉愭枡鏁版嵁搴?/div><button class="sub-action" onclick="MaterialListRenderer.showCompare()"><i data-lucide="git-compare" class="lucide"></i></button></div>
+<div class="container">
+  <div id="material-toolbar"></div>
+  <div id="material-categories"></div>
+  <div id="material-list"></div>
+</div>
+</div>
+
+<!-- ========== 瀛愰〉闈細鏉愭枡璇︽儏 ========== -->
+<div class="page sub-page" id="page-material-detail">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title" id="material-detail-title">鏉愭枡璇︽儏</div><button class="sub-action" onclick="MaterialDetailRenderer.exportData()"><i data-lucide="download" class="lucide"></i></button></div>
+<div class="container">
+  <div id="material-detail-header"></div>
+  <div id="material-detail-tabs"></div>
+  <div id="material-detail-content"></div>
+  <div id="material-related"></div>
+</div>
+</div>
+
+<!-- ========== 瀛愰〉闈細铏氭嫙瀹為獙 ========== -->
+<div class="page sub-page" id="page-experiments">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">铏氭嫙瀹為獙瀹?/div></div>
+<div class="container">
+  <div class="tab-bar"><button class="tab-item active" onclick="VirtualLab.setTab('physics')">鐗╃悊瀹為獙</button><button class="tab-item" onclick="VirtualLab.setTab('chemistry')">鍖栧瀹為獙</button><button class="tab-item" onclick="VirtualLab.setTab('biology')">鐢熺墿瀹為獙</button><button class="tab-item" onclick="VirtualLab.setTab('material')">鏉愭枡瀹為獙</button></div>
+  <div id="experiment-list"></div>
+</div>
+</div>
+
+<!-- ========== 瀛愰〉闈細鎼滅储 ========== -->
+<div class="page sub-page" id="page-search">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">鎼滅储</div></div>
+<div class="container">
+  <div class="card" style="padding:12px 16px;margin-bottom:16px"><input class="form-input" id="search-input" placeholder="鎼滅储浠诲姟銆佽绋嬨€佹枃绔犮€佹潗鏂?.." autofocus style="margin-bottom:0" oninput="handleSearchInput(this.value)" onkeydown="if(event.key==='Enter')handleSearchSubmit(this.value)"></div>
+  <div id="search-suggestions"></div>
+  <div id="search-results" style="display:none"></div>
+  <div id="search-default">
+    <div class="section-header"><div class="section-title" style="font-size:15px"><i data-lucide="clock" class="lucide" style="width:16px;height:16px;color:var(--text3)"></i>鏈€杩戞悳绱?/div><div class="section-more" onclick="Search.clearHistory();document.getElementById('search-history-chips').innerHTML='';UI.toast.success('宸叉竻闄ゆ悳绱㈠巻鍙?)" style="cursor:pointer">娓呴櫎</div></div>
+    <div class="chip-row" id="search-history-chips"></div>
+    <div class="section-header" style="margin-top:20px"><div class="section-title" style="font-size:15px"><i data-lucide="trending-up" class="lucide" style="width:16px;height:16px;color:var(--primary)"></i>鐑棬鎼滅储</div></div>
+    <div id="search-hot-list"></div>
+  </div>
+</div>
+</div>
+<script>
+// 鎼滅储椤甸潰鍒濆鍖?
+function initSearchPage() {
+  // 娓叉煋鎼滅储鍘嗗彶
+  const historyChips = document.getElementById('search-history-chips');
+  if (historyChips && Search.history.length > 0) {
+    historyChips.innerHTML = Search.history.slice(0,8).map(h => '<span class="chip" onclick="document.getElementById(\'search-input\').value=\''+h+'\';handleSearchSubmit(\''+h+'\')">'+h+'</span>').join('');
+  }
+  // 娓叉煋鐑棬鎼滅储
+  const hotList = document.getElementById('search-hot-list');
+  if (hotList) {
+    const hotData = [
+      {title:'瀹ゆ俯瓒呭鏉愭枡',count:'12.3涓囨鎼滅储',icon:'flame',color:'#ffb8a0'},
+      {title:'AI for Science',count:'8.7涓囨鎼滅储',icon:'brain',color:'#a0d0f0'},
+      {title:'閲忓瓙璁＄畻',count:'6.5涓囨鎼滅储',icon:'cpu',color:'#c8b0f0'},
+      {title:'浜岀淮鏉愭枡',count:'5.2涓囨鎼滅储',icon:'layers',color:'#a0e8c0'},
+      {title:'DFT璁＄畻鏁欑▼',count:'4.8涓囨鎼滅储',icon:'book-open',color:'#ffe0a0'}
+    ];
+    hotList.innerHTML = hotData.map(h => '<div class="list-item" onclick="document.getElementById(\'search-input\').value=\''+h.title+'\';handleSearchSubmit(\''+h.title+'\')"><div class="list-item-icon" style="background:linear-gradient(135deg,'+h.color+','+h.color+'cc)"><i data-lucide="'+h.icon+'" class="lucide icon-white"></i></div><div class="list-item-content"><div class="list-item-title">'+h.title+'</div><div class="list-item-sub">'+h.count+'</div></div><i data-lucide="chevron-right" class="lucide list-item-arrow"></i></div>').join('');
+  }
+  if (typeof renderIcons === 'function') renderIcons();
+}
+
+// 鎼滅储杈撳叆瀹炴椂鑱旀兂
+async function handleSearchInput(value) {
+  const suggestionsEl = document.getElementById('search-suggestions');
+  const resultsEl = document.getElementById('search-results');
+  const defaultEl = document.getElementById('search-default');
+  
+  if (!value.trim()) {
+    suggestionsEl.innerHTML = '';
+    resultsEl.style.display = 'none';
+    defaultEl.style.display = 'block';
+    return;
+  }
+  
+  defaultEl.style.display = 'none';
+  resultsEl.style.display = 'none';
+  
+  const suggestions = await Search.suggest(value);
+  if (suggestions.length > 0) {
+    suggestionsEl.innerHTML = '<div class="card" style="padding:8px">'+suggestions.slice(0,8).map(s => '<div onclick="document.getElementById(\'search-input\').value=\''+s.text+'\';handleSearchSubmit(\''+s.text+'\')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer" onmouseover="this.style.background=\'var(--bg-secondary)\'" onmouseout="this.style.background=\'transparent\'"><i data-lucide="'+s.icon+'" class="lucide" style="width:16px;height:16px;color:var(--text3)"></i><span style="font-size:14px;color:var(--text);flex:1">'+s.text+'</span><span style="font-size:11px;color:var(--text3)">'+s.type+'</span></div>').join('')+'</div>';
+    if (typeof renderIcons === 'function') renderIcons();
+  } else {
+    suggestionsEl.innerHTML = '';
+  }
+}
+
+// 鎻愪氦鎼滅储
+async function handleSearchSubmit(keyword) {
+  if (!keyword.trim()) return;
+  Search.addHistory(keyword);
+  
+  const suggestionsEl = document.getElementById('search-suggestions');
+  const resultsEl = document.getElementById('search-results');
+  const defaultEl = document.getElementById('search-default');
+  
+  suggestionsEl.innerHTML = '';
+  defaultEl.style.display = 'none';
+  resultsEl.style.display = 'block';
+  resultsEl.innerHTML = '<div style="text-align:center;padding:40px">'+UI.loading.spinner(24)+'<p style="font-size:13px;color:var(--text3);margin-top:12px">鎼滅储涓?..</p></div>';
+  
+  const results = await Search.search(keyword);
+  const sources = Object.keys(results);
+  
+  if (sources.length === 0) {
+    resultsEl.innerHTML = UI.state.empty('search', {desc:'鏈壘鍒颁笌"'+keyword+'"鐩稿叧鐨勫唴瀹癸紝璇曡瘯鍏朵粬鍏抽敭璇?});
+    return;
+  }
+  
+  let html = '';
+  sources.forEach(source => {
+    const r = results[source];
+    html += '<div class="section-header"><div class="section-title" style="font-size:15px"><i data-lucide="'+r.icon+'" class="lucide" style="width:16px;height:16px;color:'+r.color+'"></i>'+r.name+' <span style="font-size:12px;color:var(--text3);font-weight:500">('+r.total+')</span></div></div>';
+    html += r.items.map(item => Search.renderResultItem(source, item)).join('');
+  });
+  resultsEl.innerHTML = html;
+  if (typeof renderIcons === 'function') renderIcons();
+}
+</script>
+
+<!-- ========== 瀛愰〉闈細閫氱煡 ========== -->
+<div class="page sub-page" id="page-notifications">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">閫氱煡涓績</div><button class="sub-action" onclick="Notification.markAllRead();renderNotifications();" title="鍏ㄩ儴宸茶"><i data-lucide="check-check" class="lucide"></i></button></div>
+<div class="container">
+  <div class="tab-bar" id="notification-tabs">
+    <button class="tab-item active" onclick="filterNotifications('all',this)">鍏ㄩ儴</button>
+    <button class="tab-item" onclick="filterNotifications('unread',this)">鏈</button>
+    <button class="tab-item" onclick="filterNotifications('job',this)">浠诲姟</button>
+    <button class="tab-item" onclick="filterNotifications('system',this)">绯荤粺</button>
+    <button class="tab-item" onclick="filterNotifications('community',this)">浜掑姩</button>
+  </div>
+  <div id="notification-list"></div>
+  <div style="text-align:center;padding:20px">
+    <button class="btn btn-secondary" style="width:auto;padding:10px 20px;font-size:13px" onclick="Notification.clearAll()"><i data-lucide="trash-2" class="lucide" style="width:14px;height:14px"></i>娓呯┖閫氱煡</button>
+  </div>
+</div>
+</div>
+<script>
+let currentNotificationFilter = 'all';
+function renderNotifications() {
+  const listEl = document.getElementById('notification-list');
+  if (!listEl) return;
+  const filter = currentNotificationFilter;
+  let list = Notification.getList();
+  
+  if (filter === 'unread') list = list.filter(n => !n.read);
+  else if (filter !== 'all') list = list.filter(n => n.type === filter);
+  
+  if (list.length === 0) {
+    listEl.innerHTML = UI.state.empty('notification');
+    if (typeof renderIcons === 'function') renderIcons();
+    return;
+  }
+  
+  Notification.renderList(listEl, {type: filter === 'unread' ? undefined : filter, unreadOnly: filter === 'unread'});
+}
+function filterNotifications(type, el) {
+  currentNotificationFilter = type;
+  document.querySelectorAll('#notification-tabs .tab-item').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderNotifications();
+}
+</script>
+
+<!-- ========== 瀛愰〉闈細鏂囩珷璇︽儏 ========== -->
+<div class="page sub-page" id="page-article-detail">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">鏂囩珷璇︽儏</div><button class="sub-action" onclick="shareArticle()"><i data-lucide="share-2" class="lucide"></i></button></div>
+<div class="container"><div class="article-detail" id="article-detail-content"></div></div>
+</div>
+
+<!-- ========== 瀛愰〉闈細璐︽埛璁剧疆 ========== -->
+<div class="page sub-page" id="page-settings">
+<div class="sub-header"><button class="back-btn" onclick="SettingsRenderer.currentGroup?SettingsRenderer.backToMain():goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title" id="settings-detail-title">璐︽埛璁剧疆</div></div>
+<div class="container">
+  <!-- 璁剧疆涓婚〉闈細9涓垎缁勫垪琛?-->
+  <div id="settings-main"></div>
+  <!-- 璁剧疆璇︽儏椤甸潰 -->
+  <div id="settings-detail" style="display:none">
+    <div id="settings-detail-content"></div>
+  </div>
+</div>
+</div>
+
+<!-- ========== 瀛愰〉闈細鐧诲綍娉ㄥ唽 ========== -->
+<div class="page sub-page" id="page-login">
+<div class="container" style="padding-top:60px" id="login-content"></div>
+</div>
+
+<!-- ========== 瀛愰〉闈細鍙戝竷鏂囩珷 ========== -->
+<div class="page sub-page" id="page-article-publish">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title">鍙戝竷鏂囩珷</div><button class="sub-action" onclick="ArticlePublishRenderer.saveDraft()" title="瀛樿崏绋?><i data-lucide="save" class="lucide"></i></button></div>
+<div class="container" id="publish-content"></div>
+</div>
+
+<!-- ========== 瀛愰〉闈細鎴戠殑鍐呭鍒楄〃 ========== -->
+<div class="page sub-page" id="page-my-content">
+<div class="sub-header"><button class="back-btn" onclick="goBack()"><i data-lucide="arrow-left" class="lucide"></i></button><div class="sub-title" id="my-content-title">鎴戠殑鍐呭</div></div>
+<div class="container">
+  <div id="my-content-filters"></div>
+  <div id="my-content-list"></div>
+</div>
+</div>
+
+<button class="fab" onclick="navigateTo('page-job-new')"><i data-lucide="plus" class="lucide icon-xl icon-white"></i></button>
+
+<nav class="bottom-nav">
+  <div class="nav-item active" data-page="home" onclick="switchTab('home')"><i data-lucide="home" class="lucide"></i><div class="nav-label">棣栭〉</div></div>
+  <div class="nav-item" data-page="compute" onclick="switchTab('compute')"><i data-lucide="cpu" class="lucide"></i><div class="nav-label">璁＄畻</div></div>
+  <div class="nav-item" data-page="learn" onclick="switchTab('learn')"><i data-lucide="book-open" class="lucide"></i><div class="nav-label">瀛︿範</div></div>
+  <div class="nav-item" data-page="ai" onclick="switchTab('ai')"><i data-lucide="bot" class="lucide"></i><div class="nav-label">AI</div></div>
+  <div class="nav-item" data-page="profile" onclick="switchTab('profile')"><i data-lucide="user" class="lucide"></i><div class="nav-label">鎴戠殑</div></div>
+</nav>
+
+<script>
+// ===== 瀵艰埅绯荤粺 (宸茬敱 core.js 鎻愪緵瀹屾暣瀹炵幇锛屾澶勪繚鐣欏吋瀹瑰彉閲? =====
+// 娉ㄦ剰: navigateTo/goBack/switchTab/showToast/_store 绛夊叏灞€鍑芥暟鐢?core.js 鎻愪緵
+let pageHistory = ['page-home'];
+let currentPage = 'page-home';
+let currentData = {};
+// 鍏ㄥ眬瀵艰埅鏁版嵁瀛樺偍锛氶伩鍏嶅唴鑱擩SON瀵艰嚧寮曞彿杞箟闂
+const _navStore = {};
+let _navCounter = 0;
+function _store(data) { const id = 'nd' + (++_navCounter); _navStore[id] = data; return id; }
+
+function navigateTo(pageId, data) {
+  // 濡傛灉data鏄瓧绗︿覆涓斾互'nd'寮€澶达紝浠庡叏灞€瀛樺偍鑾峰彇
+  if (typeof data === 'string' && data.startsWith('nd') && _navStore[data]) {
+    data = _navStore[data];
+  }
+  if (data) currentData[pageId] = data;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById(pageId);
+  if (target) {
+    target.classList.add('active');
+    if (pageId !== currentPage) pageHistory.push(pageId);
+    currentPage = pageId;
+    window.scrollTo({top:0,behavior:'smooth'});
+    // 瀛愰〉闈㈤殣钘忓簳閮ㄥ鑸拰FAB
+    const isSub = target.classList.contains('sub-page');
+    document.querySelector('.bottom-nav').style.display = isSub ? 'none' : 'flex';
+    document.querySelector('.fab').style.display = isSub ? 'none' : 'flex';
+    // 娓叉煋瀛愰〉闈㈠唴瀹?
+    renderSubPage(pageId);
+    renderIcons();
+  }
+}
+
+function goBack() {
+  if (pageHistory.length > 1) {
+    pageHistory.pop();
+    const prev = pageHistory[pageHistory.length - 1];
+    currentPage = prev;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(prev).classList.add('active');
+    const isSub = document.getElementById(prev).classList.contains('sub-page');
+    document.querySelector('.bottom-nav').style.display = isSub ? 'none' : 'flex';
+    document.querySelector('.fab').style.display = isSub ? 'none' : 'flex';
+    // 鏇存柊搴曢儴瀵艰埅婵€娲荤姸鎬?
+    const tabMap = {'page-home':'home','page-compute':'compute','page-learn':'learn','page-ai':'ai','page-profile':'profile'};
+    if (tabMap[prev]) {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelector('.nav-item[data-page="'+tabMap[prev]+'"]').classList.add('active');
+    }
+    window.scrollTo({top:0,behavior:'smooth'});
+    renderIcons();
+  }
+}
+
+function switchTab(tab) {
+  pageHistory = ['page-'+tab];
+  currentPage = 'page-'+tab;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector('.nav-item[data-page="'+tab+'"]').classList.add('active');
+  document.querySelector('.bottom-nav').style.display = 'flex';
+  document.querySelector('.fab').style.display = 'flex';
+  window.scrollTo({top:0,behavior:'smooth'});
+  renderIcons();
+}
+
+// ===== 鍥炬爣娓叉煋 =====
+function renderIcons() {
+  if (window.lucide && typeof window.lucide.createIcons === 'function') {
+    window.lucide.createIcons();
+  } else {
+    setTimeout(renderIcons, 100);
+  }
+}
+
+// ===== Toast =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ===== 宸ュ叿鍑芥暟 =====
+function iconColorClass(color) {
+  const map = { primary:'var(--primary)', blue:'var(--blue)', green:'var(--green)', purple:'var(--purple)', orange:'var(--primary)', yellow:'var(--yellow)' };
+  return map[color] || 'var(--text2)';
+}
+function progressColorClass(p) { if(p>=80)return'pf-green'; if(p>=50)return'pf-blue'; if(p>=20)return'pf-orange'; return'pf-purple'; }
+
+function selectChip(el) {
+  el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function submitJob() {
+  // 实际调用JobManager创建任务，而非仅显示toast
+  if (typeof JobManager !== 'undefined' && typeof JobManager.createJob === 'function') {
+    try {
+      const jobData = {
+        title: '新建计算任务',
+        type: 'dft',
+        software: 'ABACUS',
+        status: 'queued',
+        progress: 0,
+        createdAt: new Date().toISOString()
+      };
+      const job = JobManager.createJob(jobData);
+      if (typeof UI !== 'undefined' && UI.toast) {
+        UI.toast.success('任务已提交，正在排队...');
+      } else {
+        showToast('任务已提交，正在排队...');
+      }
+      setTimeout(() => {
+        if (typeof switchTab === 'function') switchTab('compute');
+      }, 1000);
+      return;
+    } catch(e) {
+      console.error('创建任务失败:', e);
+    }
+  }
+  // Fallback: 显示toast并跳转
+  if (typeof UI !== 'undefined' && UI.toast) {
+    UI.toast.info('任务已提交，正在排队...');
+  } else {
+    showToast('任务已提交，正在排队...');
+  }
+  setTimeout(() => { if (typeof switchTab === 'function') switchTab('compute'); }, 1000);
+}
+
+// ===== 涓婚〉闈㈡覆鏌?=====
+function renderWelcome() {
+  const u = getCurrentUser();
+  const tagClass = u.levelColor==='purple'?'welcome-tag-purple':u.levelColor==='green'?'welcome-tag-green':'';
+  document.getElementById('welcome-card').innerHTML = `<div class="welcome-row"><div class="avatar">${u.avatar}</div><div class="welcome-text"><h2>${u.name}</h2><p>${u.university} 路 ${u.major} 路 ${u.grade}</p><span class="welcome-tag ${tagClass}"><i data-lucide="sparkles" class="lucide" style="width:12px;height:12px"></i>${u.level}浼氬憳</span></div></div>`;
+}
+
+function renderStats() {
+  const u = getCurrentUser();
+  document.getElementById('stats-row').innerHTML = `<div class="stat-card"><div class="stat-value">${u.stats.totalJobs}</div><div class="stat-label">鎬讳换鍔?/div></div><div class="stat-card blue"><div class="stat-value">${Math.floor(u.stats.gpuHours)}<span class="stat-unit">h</span></div><div class="stat-label">GPU鏃堕暱</div></div><div class="stat-card green"><div class="stat-value">${u.stats.courses}</div><div class="stat-label">瀛︿範涓?/div></div>`;
+}
+
+function renderGpuCard() {
+  const u = getCurrentUser();
+  const used = u.stats.gpuHours;
+  const total = u.level==='涓撲笟鐗??1000:u.level==='鍏ラ棬鐗??100:10;
+  const remaining = Math.max(0, total-used);
+  const percent = Math.min(100, (used/total)*100);
+  document.getElementById('gpu-card').innerHTML = `<div class="big-stat-row"><div class="big-stat-number">${remaining.toFixed(1)}</div><div class="big-stat-unit">GPU灏忔椂</div></div><div class="big-stat-label"><i data-lucide="gauge" class="lucide" style="width:14px;height:14px"></i>鏈湀鍓╀綑绠楀姏 路 宸蹭娇鐢?${used.toFixed(1)}h / ${total}h</div><div class="big-stat-bar"><div class="big-stat-bar-fill" style="width:${percent}%"></div></div>`;
+}
+
+function renderJobCard(job) {
+  const iconColor = iconColorClass(job.iconColor);
+  if (job.status==='running'||job.status==='queued') {
+    const badge = job.status==='running'?'<span class="card-badge badge-running"><span class="badge-dot-icon"></span>杩愯涓?/span>':'<span class="card-badge badge-queued"><i data-lucide="clock" class="lucide" style="width:11px;height:11px"></i>鎺掗槦涓?/span>';
+    return `<div class="card" onclick="navigateTo('page-job-detail','${_store(job)}')"><div class="card-header"><div class="card-title"><i data-lucide="${job.icon}" class="lucide" style="width:16px;height:16px;color:${iconColor}"></i>${job.title}</div>${badge}</div><div class="job-meta"><span><i data-lucide="flask-conical" class="lucide" style="width:13px;height:13px"></i>${job.software} 路 ${job.type}</span><span>${job.status==='running'?job.progress+'%':job.eta}</span></div><div class="progress-track"><div class="progress-fill ${progressColorClass(job.progress)}" style="width:${job.progress}%"></div></div></div>`;
+  }
+  return `<div class="card" onclick="navigateTo('page-job-detail','${_store(job)}')"><div class="card-header"><div class="card-title"><i data-lucide="${job.icon}" class="lucide" style="width:16px;height:16px;color:${iconColor}"></i>${job.title}</div><span class="card-badge badge-completed">宸插畬鎴?/span></div><div class="job-meta"><span><i data-lucide="flask-conical" class="lucide" style="width:13px;height:13px"></i>${job.software} 路 ${job.type}</span><span>${job.completed} 路 ${job.duration}</span></div></div>`;
+}
+
+function renderHomeJobs() {
+  const u = getCurrentUser();
+  document.getElementById('home-running-jobs').innerHTML = u.runningJobs.map(renderJobCard).join('') || '<div class="empty-state"><div class="empty-icon">馃摥</div><div class="empty-text">鏆傛棤杩愯涓殑浠诲姟</div></div>';
+}
+
+function renderComputeJobs() {
+  if (typeof JobListRenderer !== 'undefined') {
+    JobListRenderer.render();
+  } else {
+    const u = getCurrentUser();
+    const runningEl = document.getElementById('compute-running');
+    const completedEl = document.getElementById('compute-completed');
+    if (runningEl) runningEl.innerHTML = u.runningJobs.map(renderJobCard).join('') || '<div class="empty-state"><div class="empty-icon">鈴?/div><div class="empty-text">鏆傛棤杩涜涓殑浠诲姟</div></div>';
+    if (completedEl) completedEl.innerHTML = u.completedJobs.slice(0,5).map(renderJobCard).join('');
+  }
+}
+
+function renderCourseCard(course) {
+  const colorMap={orange:'ct-orange',blue:'ct-blue',green:'ct-green',purple:'ct-purple',teal:'ct-teal'};
+  const fillMap={orange:'pf-orange',blue:'pf-blue',green:'pf-green',purple:'pf-purple'};
+  const textColor={orange:'var(--primary)',blue:'var(--blue)',green:'var(--green)',purple:'var(--purple)'};
+  return `<div class="card course-card" onclick="navigateTo('page-course-detail','${_store(course)}')"><div class="course-thumb ${colorMap[course.color]||'ct-blue'}"><i data-lucide="${course.icon}" class="lucide icon-2xl icon-white"></i></div><div class="course-info"><div class="course-name">${course.title}</div><div class="course-meta"><i data-lucide="play-circle" class="lucide" style="width:12px;height:12px"></i>${course.totalLessons}璇炬椂 路 ${course.currentLesson}</div><div class="course-progress-bar"><div class="course-progress-fill ${fillMap[course.color]||'pf-blue'}" style="width:${course.progress}%"></div></div><div class="course-progress-text" style="color:${textColor[course.color]||'var(--blue)'}">杩涘害 ${course.progress}%</div></div></div>`;
+}
+
+function renderCourses() {
+  const u = getCurrentUser();
+  document.getElementById('home-courses').innerHTML = u.courses.slice(0,2).map(renderCourseCard).join('');
+  document.getElementById('learn-courses').innerHTML = u.courses.map(renderCourseCard).join('');
+}
+
+function renderRecommendCourses() {
+  const recs = [
+    {title:'鏉愭枡绉戝鍩虹',icon:'flask-conical',color:'green',meta:'20璇炬椂 路 閫傚悎鏈鐢?},
+    {title:'AI for Science',icon:'brain',color:'purple',meta:'15璇炬椂 路 鍓嶆部鏂瑰悜'},
+    {title:'铏氭嫙瀹為獙瀹わ細鍖栧瀹為獙',icon:'microscope',color:'orange',meta:'10涓疄楠?路 閫傚悎涓鐢?},
+    {title:'閲忓瓙鍔涘濂囧涔嬫梾',icon:'orbit',color:'blue',meta:'12璇炬椂 路 閫傚悎楂樹腑鐢?}
+  ];
+  document.getElementById('recommend-courses').innerHTML = recs.map(c => `<div class="card course-card" onclick="navigateTo('page-course-detail','${_store({...c,totalLessons:20,progress:0,currentLesson:'寮€濮嬪涔?})}')"><div class="course-thumb ct-${c.color}"><i data-lucide="${c.icon}" class="lucide icon-2xl icon-white"></i></div><div class="course-info"><div class="course-name">${c.title}</div><div class="course-meta"><i data-lucide="play-circle" class="lucide" style="width:12px;height:12px"></i>${c.meta}</div></div></div>`).join('');
+}
+
+function filterCourses(type, el) {
+  el.parentElement.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  // 瀹為檯绛涢€夐€昏緫锛氭牴鎹被鍨嬫樉绀?闅愯棌璇剧▼鍗＄墖
+  const containers = ['recommend-courses', 'all-courses', 'course-list'];
+  let filtered = 0, total = 0;
+  containers.forEach(id => {
+    const container = document.getElementById(id);
+    if (!container) return;
+    const cards = container.querySelectorAll('.course-card, .list-item, .card');
+    cards.forEach(card => {
+      total++;
+      const text = card.textContent.toLowerCase();
+      const typeMap = { 'all': true, 'recommend': text.includes('鎺ㄨ崘')||text.includes('鐑棬'), 'free': text.includes('鍏嶈垂'), 'paid': text.includes('浠樿垂'), 'beginner': text.includes('鍏ラ棬')||text.includes('鍩虹'), 'advanced': text.includes('杩涢樁')||text.includes('楂樼骇'), 'dft': text.includes('DFT')||text.includes('瀵嗗害娉涘嚱'), 'md': text.includes('MD')||text.includes('鍒嗗瓙鍔ㄥ姏瀛?), 'ml': text.includes('ML')||text.includes('鏈哄櫒瀛︿範')||text.includes('AI') };
+      const show = typeMap[type] !== undefined ? typeMap[type] : true;
+      if (show) { card.style.display = ''; filtered++; }
+      else { card.style.display = 'none'; }
+    });
+  });
+  if (typeof UI !== 'undefined' && UI.toast) {
+    UI.toast.info(`绛涢€夛細${el.textContent.trim()}锛?{filtered}/${total}涓绋嬶級`);
+  } else {
+    showToast(`绛涢€夛細${el.textContent.trim()}锛?{filtered}/${total}涓绋嬶級`);
+  }
+}
+
+// ===== 鎻愪氦浣滀笟 =====
+function submitHomework(btn) {
+  if (typeof UI !== 'undefined' && UI.dialog) {
+    UI.dialog.confirm({
+      title: '鎻愪氦浣滀笟',
+      message: '纭鎻愪氦鏈璇惧悗浣滀笟绛旀锛熸彁浜ゅ悗灏嗚繘鍏I鎵规敼娴佺▼锛岄璁?-3鍒嗛挓鍐呰繑鍥炴壒鏀圭粨鏋溿€?,
+      confirmText: '纭鎻愪氦',
+      cancelText: '鍐嶆鏌ヤ竴涓?,
+      onConfirm: () => {
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i data-lucide="loader-2" class="lucide"></i>鎻愪氦涓?..'; renderIcons(); }
+        setTimeout(() => {
+          if (typeof UI !== 'undefined') UI.toast.success('浣滀笟宸叉彁浜わ紝AI姝ｅ湪鎵规敼涓?..');
+          if (btn) { btn.innerHTML = '<i data-lucide="check-circle" class="lucide"></i>宸叉彁浜?; }
+          renderIcons();
+        }, 1500);
+      }
+    });
+  } else {
+    showToast('浣滀笟宸叉彁浜?);
+    if (btn) { btn.disabled = true; btn.textContent = '宸叉彁浜?; }
+  }
+}
+
+// ===== 杩愯鍏ㄩ儴Notebook鍗曞厓鏍?=====
+function runAllNotebookCells(btn) {
+  // 浼樺厛璋冪敤NotebookEditor鐨剅unAll鏂规硶
+  if (typeof NotebookEditor !== 'undefined' && typeof NotebookEditor.runAll === 'function') {
+    NotebookEditor.runAll();
+    return;
+  }
+  // 闄嶇骇鏂规锛氭ā鎷熻繍琛屽叏閮ㄥ崟鍏冩牸
+  if (typeof UI !== 'undefined' && UI.dialog) {
+    UI.dialog.confirm({
+      title: '杩愯鍏ㄩ儴鍗曞厓鏍?,
+      message: '灏嗘寜椤哄簭鎵ц褰撳墠Notebook涓殑鎵€鏈変唬鐮佸崟鍏冩牸锛岄璁￠渶瑕?0-30绉掋€傛槸鍚︾户缁紵',
+      confirmText: '寮€濮嬭繍琛?,
+      cancelText: '鍙栨秷',
+      onConfirm: () => {
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i data-lucide="loader-2" class="lucide icon-white"></i>杩愯涓?..'; renderIcons(); }
+        const cells = document.querySelectorAll('.nb-cell');
+        let index = 0;
+        const runNext = () => {
+          if (index >= cells.length) {
+            if (btn) { btn.innerHTML = '<i data-lucide="play" class="lucide icon-white"></i>杩愯鍏ㄩ儴'; btn.disabled = false; }
+            if (typeof UI !== 'undefined') UI.toast.success(`鍏ㄩ儴 ${cells.length} 涓崟鍏冩牸杩愯瀹屾垚`);
+            renderIcons();
+            return;
+          }
+          const cell = cells[index];
+          const status = cell.querySelector('.nb-cell-header span:last-child');
+          if (status) { status.textContent = '杩愯涓?..'; status.style.color = 'var(--orange)'; }
+          setTimeout(() => {
+            if (status) { status.textContent = '宸插畬鎴?; status.style.color = 'var(--green)'; }
+            index++;
+            runNext();
+          }, 400);
+        };
+        runNext();
+      }
+    });
+  } else {
+    showToast('寮€濮嬭繍琛屽叏閮ㄥ崟鍏冩牸...');
+  }
+}
+
+function renderAIConversations() {
+  const u = getCurrentUser();
+  const convos = u.articles.map(a => ({title:a.title.substring(0,20)+(a.title.length>20?'...':''),icon:a.tag.includes('鎷撴墤')?'magnet':a.tag.includes('鍒嗗瓙')?'dna':'code-2',color:a.tag.includes('鎷撴墤')?'purple':a.tag.includes('鍒嗗瓙')?'green':'blue',time:a.date,count:Math.floor(a.comments*1.5)+'鏉℃秷鎭?}));
+  document.getElementById('ai-conversations').innerHTML = convos.map(c => `<div class="card" onclick="navigateTo('page-ai-chat')"><div class="card-header"><div class="card-title"><i data-lucide="${c.icon}" class="lucide" style="width:16px;height:16px;color:${iconColorClass(c.color)}"></i>${c.title}</div><span class="card-badge badge-completed">宸插畬鎴?/span></div><div class="job-meta"><span><i data-lucide="bot" class="lucide" style="width:13px;height:13px"></i>AI鍔╂墜 路 ${c.time}</span><span>${c.count}</span></div></div>`).join('');
+}
+
+function renderProfile() {
+  if (typeof ProfileRenderer !== 'undefined') {
+    ProfileRenderer.render();
+  } else {
+    // 鍏煎鏃х増娓叉煋
+    const u = getCurrentUser();
+    const tagClass = u.levelColor==='purple'?'welcome-tag-purple':u.levelColor==='green'?'welcome-tag-green':'';
+    const el = document.getElementById('profile-welcome');
+    if (el) el.innerHTML = `<div class="welcome-row"><div class="avatar avatar-purple">${u.avatar}</div><div class="welcome-text"><h2 style="font-size:18px">${u.name}</h2><p>${u.university} 路 ${u.department}</p><span class="welcome-tag ${tagClass}"><i data-lucide="sparkles" class="lucide" style="width:12px;height:12px"></i>${u.level} 路 ${u.role}</span></div></div>`;
+    const statsEl = document.getElementById('profile-stats');
+    if (statsEl) statsEl.innerHTML = `<div class="stat-card"><div class="stat-value">${u.stats.totalJobs}</div><div class="stat-label">鎬讳换鍔?/div></div><div class="stat-card blue"><div class="stat-value">${Math.floor(u.stats.gpuHours)}h</div><div class="stat-label">鎬绘椂闀?/div></div><div class="stat-card green"><div class="stat-value">${u.stats.courses}</div><div class="stat-label">璇剧▼</div></div>`;
+  }
+}
+
+function renderAll() {
+  renderWelcome(); renderStats(); renderGpuCard(); renderHomeJobs();
+  renderComputeJobs(); renderCourses(); renderRecommendCourses();
+  renderAIConversations(); renderProfile(); renderMaterialsList();
+  renderIcons();
+}
+
+function doSwitchUser(index) {
+  switchUser(index);
+  showToast(`宸插垏鎹㈠埌锛?{getCurrentUser().name}`);
+}
+
+// ===== 瀛愰〉闈㈡覆鏌?=====
+function renderSubPage(pageId) {
+  const data = currentData[pageId] || {};
+
+  // === API数据自动同步（fire-and-forget，不阻塞渲染） ===
+  if (typeof DataSync !== 'undefined' && !DataSync.isMockMode()) {
+    if (['page-compute','page-job-list','page-job-detail','page-job-new','page-results'].includes(pageId)) {
+      DataSync.jobs.syncList().then(synced => { if (synced && typeof JobListRenderer !== 'undefined') { try { JobListRenderer.render(); } catch(e){} } });
+      if (pageId === 'page-job-detail' && data?.id) DataSync.jobs.syncDetail(data.id);
+    }
+    if (['page-notebook-list','page-notebook-detail'].includes(pageId)) {
+      DataSync.notebooks.syncList().then(synced => { if (synced && typeof NotebookListRenderer !== 'undefined') { try { NotebookListRenderer.render(); } catch(e){} } });
+    }
+    if (['page-workflow-list','page-workflow-editor'].includes(pageId)) {
+      DataSync.workflows.syncList().then(synced => { if (synced && typeof WorkflowListRenderer !== 'undefined') { try { WorkflowListRenderer.render(); } catch(e){} } });
+    }
+    if (['page-materials','page-material-detail'].includes(pageId)) {
+      DataSync.materials.syncList().then(synced => { if (synced && typeof MaterialListRenderer !== 'undefined') { try { MaterialListRenderer.render(); } catch(e){} } });
+    }
+  }
+
+  if (pageId === 'page-job-detail') {
+    if (typeof JobDetailRenderer !== 'undefined') {
+      const job = data && data.id ? JobManager.getJob(data.id) : (getCurrentUser().runningJobs[0] || getCurrentUser().completedJobs[0] || {});
+      JobDetailRenderer.render(job);
+    } else renderJobDetail(data);
+  }
+  if (pageId === 'page-job-new') { if (typeof NewJobWizard !== 'undefined') NewJobWizard.init(); }
+  if (pageId === 'page-results') {
+    if (typeof ResultsRenderer !== 'undefined') {
+      const job = data && data.id ? JobManager.getJob(data.id) : (getCurrentUser().completedJobs[0] || getCurrentUser().runningJobs[0] || {});
+      ResultsRenderer.render(job);
+    }
+  }
+  if (pageId === 'page-notebook-detail') { if (typeof NotebookEditor !== 'undefined') NotebookEditor.init(data); else renderNotebookDetail(data); }
+  if (pageId === 'page-article-detail') renderArticleDetail(data);
+  if (pageId === 'page-notebook-list') { if (typeof NotebookListRenderer !== 'undefined') NotebookListRenderer.render(); else renderNotebookList(); }
+  if (pageId === 'page-settings') { if (typeof SettingsRenderer !== 'undefined') SettingsRenderer.renderMain(); else renderSettings(); }
+  if (pageId === 'page-search') initSearchPage();
+  if (pageId === 'page-notifications') renderNotifications();
+  if (pageId === 'page-login') { if (typeof LoginRenderer !== 'undefined') LoginRenderer.render(); }
+  if (pageId === 'page-article-publish') { if (typeof ArticlePublishRenderer !== 'undefined') ArticlePublishRenderer.render(); }
+  if (pageId === 'page-my-content') { if (typeof MyContentRenderer !== 'undefined') MyContentRenderer.render(); }
+  if (pageId === 'page-workflow-list') { if (typeof WorkflowListRenderer !== 'undefined') WorkflowListRenderer.render(); }
+      if (pageId === 'page-workflow-editor') { if (typeof WorkflowEditor !== 'undefined') WorkflowEditor.init(data); }
+  if (pageId === 'page-molecules') { if (typeof MoleculeRenderer !== 'undefined') MoleculeRenderer.init(); }
+  if (pageId === 'page-materials') { if (typeof MaterialListRenderer !== 'undefined') MaterialListRenderer.render(); }
+  if (pageId === 'page-material-detail') { if (typeof MaterialDetailRenderer !== 'undefined') MaterialDetailRenderer.init(data); }
+  if (pageId === 'page-knowledge-graph') { if (typeof KnowledgeGraph !== 'undefined') KnowledgeGraph.render(); }
+  if (pageId === 'page-experiments') { if (typeof VirtualLab !== 'undefined') VirtualLab.render(); }
+  if (pageId === 'page-course-detail') { if (typeof LearningSystem !== 'undefined') LearningSystem.renderCourseDetail(data); else renderCourseDetail(data); }
+  if (pageId === 'page-lesson') { if (typeof LearningSystem !== 'undefined') LearningSystem.renderLesson(data); else renderLesson(data); }
+}
+
+function renderJobDetail(job) {
+  if (!job || !job.id) {
+    const u = getCurrentUser();
+    job = u.runningJobs[0] || u.completedJobs[0] || {};
+  }
+  document.getElementById('job-detail-title').textContent = job.title || '浠诲姟璇︽儏';
+  const isRunning = job.status === 'running';
+  document.getElementById('job-detail-content').innerHTML = `
+    <div class="card"><div class="card-header"><div class="card-title"><i data-lucide="${job.icon||'cpu'}" class="lucide" style="width:20px;height:20px;color:${iconColorClass(job.iconColor)}"></i>${job.title}</div><span class="card-badge ${isRunning?'badge-running':'badge-completed'}">${isRunning?'杩愯涓?:'宸插畬鎴?}</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+      <div><div style="font-size:11px;color:var(--text3)">璁＄畻绫诲瀷</div><div style="font-size:14px;font-weight:700">${job.type||'DFT'}</div></div>
+      <div><div style="font-size:11px;color:var(--text3)">璁＄畻杞欢</div><div style="font-size:14px;font-weight:700">${job.software||'VASP'}</div></div>
+      <div><div style="font-size:11px;color:var(--text3)">鎻愪氦鏃堕棿</div><div style="font-size:14px;font-weight:700">${job.submitted||job.completed||'-'}</div></div>
+      <div><div style="font-size:11px;color:var(--text3)">${isRunning?'棰勮瀹屾垚':'璁＄畻鏃堕暱'}</div><div style="font-size:14px;font-weight:700">${job.eta||job.duration||'-'}</div></div>
+    </div></div>
+    ${isRunning?`<div class="card"><div class="card-title" style="margin-bottom:12px">璁＄畻杩涘害</div><div class="progress-track" style="height:14px"><div class="progress-fill ${progressColorClass(job.progress)}" style="width:${job.progress}%"></div></div><div style="font-size:13px;color:var(--text2);margin-top:10px;font-weight:600">${job.progress}% 路 ${job.eta}</div></div>`:''}
+    <div class="card"><div class="card-title" style="margin-bottom:12px"><i data-lucide="terminal" class="lucide" style="width:16px;height:16px;color:var(--green)"></i>璁＄畻鏃ュ織</div>
+    <div style="background:#1e293b;color:#a5f3fc;padding:14px;border-radius:10px;font-family:monospace;font-size:11px;line-height:1.8;max-height:200px;overflow-y:auto">
+      <div style="color:#6ee7b7">[INFO] 浠诲姟鍚姩锛屽姞杞借緭鍏ユ枃浠?..</div>
+      <div style="color:#6ee7b7">[INFO] 璇诲彇POSCAR: 9 atoms, MoS2</div>
+      <div style="color:#6ee7b7">[INFO] K鐐圭綉鏍? 12x12x1</div>
+      <div style="color:#6ee7b7">[INFO] 鎴柇鑳? 500 eV</div>
+      <div style="color:#fcd34d">[WARN] 鐢靛瓙姝ユ敹鏁涜緝鎱紝宸茶皟鏁存贩鍚堝弬鏁?/div>
+      <div style="color:#6ee7b7">[INFO] 鐢靛瓙鑷唇: E0=-89.234 eV</div>
+      <div style="color:#6ee7b7">[INFO] 鍔涙敹鏁? max force=0.012 eV/脜</div>
+      <div style="color:#a5f3fc">[...] 姝ｅ湪杩涜闈炶嚜娲借绠?..</div>
+    </div></div>
+    ${!isRunning?`<button class="btn btn-primary" onclick="navigateTo('page-results')"><i data-lucide="bar-chart-3" class="lucide icon-white"></i>鏌ョ湅璁＄畻缁撴灉</button>`:`<button class="btn btn-secondary" onclick="cancelJob(this)"><i data-lucide="x-circle" class="lucide"></i>鍙栨秷浠诲姟</button>`}
+  `;
+  renderIcons();
+}
+
+function renderCourseDetail(course) {
+  if (!course || !course.title) course = {title:'璇剧▼璇︽儏',icon:'book-open',color:'blue',totalLessons:16,progress:50,currentLesson:'绗?璇?};
+  document.getElementById('course-detail-title').textContent = course.title;
+  const colorMap={orange:'ct-orange',blue:'ct-blue',green:'ct-green',purple:'ct-purple',teal:'ct-teal'};
+  document.getElementById('course-detail-content').innerHTML = `
+    <div class="card" style="text-align:center;padding:30px 20px">
+      <div class="course-thumb ${colorMap[course.color]||'ct-blue'}" style="width:80px;height:80px;margin:0 auto 16px"><i data-lucide="${course.icon}" class="lucide icon-2xl icon-white" style="width:40px;height:40px"></i></div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:8px">${course.title}</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:16px">${course.totalLessons}璇炬椂 路 ${course.progress}% 宸插畬鎴?/div>
+      <div class="progress-track"><div class="progress-fill pf-blue" style="width:${course.progress}%"></div></div>
+    </div>
+    <div class="section-header"><div class="section-title" style="font-size:15px"><i data-lucide="list" class="lucide" style="width:16px;height:16px"></i>璇剧▼鐩綍</div></div>
+    ${Array.from({length:Math.min(course.totalLessons,8)},(_,i)=>{const done=i<Math.floor(course.totalLessons*course.progress/100);return `<div class="list-item" onclick="navigateTo('page-lesson',{title:'绗?{i+1}璇?})"><div class="list-item-icon" style="background:${done?'linear-gradient(135deg,#a0e8c0,#80dca8)':'linear-gradient(135deg,#d0d8e0,#b8c4d0)'}"><i data-lucide="${done?'check-circle':'play-circle'}" class="lucide icon-white"></i></div><div class="list-item-content"><div class="list-item-title">绗?{i+1}璇撅細璇剧▼鍐呭鏍囬</div><div class="list-item-sub">${done?'宸插畬鎴?:'绾?0鍒嗛挓'}</div></div><i data-lucide="chevron-right" class="lucide list-item-arrow"></i></div>`}).join('')}
+    <button class="btn btn-primary" style="margin-top:16px" onclick="navigateTo('page-lesson',{title:'${course.currentLesson}'})"><i data-lucide="play" class="lucide icon-white"></i>缁х画瀛︿範</button>
+  `;
+  renderIcons();
+}
+
+function renderNotebookDetail(nb) {
+  if (!nb || !nb.title) nb = {title:'Untitled Notebook',kernel:'Python 3.12',cells:20};
+  document.getElementById('nb-detail-title').textContent = nb.title;
+  document.getElementById('notebook-detail-content').innerHTML = `
+    <div class="card" style="padding:12px 16px;margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;color:var(--text2);display:flex;align-items:center;gap:6px"><i data-lucide="code-2" class="lucide" style="width:14px;height:14px"></i>${nb.kernel}</div><div style="font-size:11px;color:var(--green);font-weight:600;display:flex;align-items:center;gap:4px"><span class="badge-dot-icon" style="background:var(--green)"></span>宸茶繛鎺?/div></div></div>
+    <div class="nb-cell"><div class="nb-cell-header"><span>In [1]:</span><span>宸茶繍琛?/span></div><div class="nb-code">import numpy as np
+import matplotlib.pyplot as plt
+
+# 璇诲彇VASP璁＄畻缁撴灉
+from pymatgen.io.vasp.outputs import Vasprun
+vr = Vasprun("vasprun.xml")
+band = vr.get_band_structure()</div></div>
+    <div class="nb-cell"><div class="nb-cell-header"><span>Out [1]:</span><span>杈撳嚭</span></div><div class="nb-output">Band structure loaded: 9 bands, 120 k-points<br>Band gap: 1.8 eV (direct, at K point)</div></div>
+    <div class="nb-cell"><div class="nb-cell-header"><span>In [2]:</span><span>宸茶繍琛?/span></div><div class="nb-code"># 缁樺埗鑳藉甫缁撴瀯鍥?
+fig, ax = plt.subplots(figsize=(8,5))
+band.plot(ax=ax)
+ax.set_title("MoS鈧?Band Structure")
+plt.tight_layout()
+plt.savefig("band_structure.png", dpi=150)</div></div>
+    <div class="nb-cell"><div class="nb-cell-header"><span>In [3]:</span><span>鏈繍琛?/span></div><div class="nb-code"># 鎬佸瘑搴﹀垎鏋?
+dos = vr.complete_dos
+print(f"璐圭背鑳界骇: {dos.efermi:.3f} eV")
+print(f"鎬绘€佸瘑搴?璐圭背鑳界骇澶?: {dos.get_densities()[np.argmin(abs(dos.energies-dos.efermi))]:.3f}")</div></div>
+    <button class="btn btn-primary" onclick="runAllNotebookCells(this)"><i data-lucide="play" class="lucide icon-white"></i>杩愯鍏ㄩ儴</button>
+  `;
+  renderIcons();
+}
+
+function renderNotebookList() {
+  const u = getCurrentUser();
+  document.getElementById('notebook-list-content').innerHTML = u.notebooks.map(nb => `<div class="notebook-card" onclick="navigateTo('page-notebook-detail','${_store(nb)}')"><div class="notebook-icon" style="background:linear-gradient(135deg,#a0d0f0,#80bde0)"><i data-lucide="${nb.icon}" class="lucide icon-lg icon-white"></i></div><div class="notebook-info"><div class="notebook-title">${nb.title}</div><div class="notebook-meta"><span><i data-lucide="code-2" class="lucide" style="width:11px;height:11px"></i>${nb.kernel}</span><span><i data-lucide="clock" class="lucide" style="width:11px;height:11px"></i>${nb.lastModified}</span><span>${nb.cells} cells</span></div></div></div>`).join('');
+  renderIcons();
+}
+
+function renderArticleDetail(article) {
+  if (!article || !article.title) article = {title:'鏂囩珷鏍囬',tag:'鏉愭枡绉戝',date:'2026-08-01',likes:0,comments:0,views:0,id:'demo'};
+  const tagColors={'鎷撴墤鏉愭枡':'#9b7ed8','璁＄畻鏂规硶':'#5ba3d9','閾佺數鏉愭枡':'#ff6b4a','鍒嗗瓙鍔ㄥ姏瀛?:'#5ccf8e','鏁版嵁鍒嗘瀽':'#ffc857','瀛︿範绗旇':'#ff8fab'};
+  const articleId = article.id || 'demo';
+  const comments = typeof ArticleManager !== 'undefined' ? ArticleManager.getComments(articleId) : [];
+  
+  document.getElementById('article-detail-content').innerHTML = `
+    <span class="article-tag" style="background:${tagColors[article.tag]||'#5ba3d9'}22;color:${tagColors[article.tag]||'#5ba3d9'};font-size:12px;padding:4px 12px">${article.tag}</span>
+    <h1 style="margin-top:12px;font-size:22px;line-height:1.4">${article.title}</h1>
+    <div class="article-meta-row" style="margin:12px 0">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#9b7ed8,#b8a0e8);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px">${getCurrentUser().avatar}</div>
+        <div><div style="font-size:13px;font-weight:700">${getCurrentUser().name}</div><div style="font-size:11px;color:var(--text3)">${article.date} 路 ${article.views||0} 闃呰</div></div>
+      </div>
+      <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="UI.toast.success('宸插叧娉ㄤ綔鑰?)">+ 鍏虫敞</button>
+    </div>
+    <div class="article-body">
+      <p>鏈枃绯荤粺鐮旂┒浜?{article.tag.includes('鎷撴墤')?'鎷撴墤鏉愭枡鐨勭數瀛愮粨鏋?:'鏉愭枡璁＄畻涓殑鍏抽敭闂'}锛岄€氳繃绗竴鎬у師鐞嗚绠楁柟娉曪紝娣卞叆鍒嗘瀽浜嗗叾鐗╃悊鏈哄埗鍜屾綔鍦ㄥ簲鐢ㄣ€?/p>
+      <h3>鐮旂┒鑳屾櫙</h3>
+      <p>杩戝勾鏉ワ紝闅忕潃璁＄畻鑳藉姏鐨勬彁鍗囧拰绠楁硶鐨勮繘姝ワ紝绗竴鎬у師鐞嗚绠楀湪鏉愭枡绉戝鐮旂┒涓彂鎸ョ潃瓒婃潵瓒婇噸瑕佺殑浣滅敤銆傚瘑搴︽硾鍑界悊璁猴紙DFT锛変綔涓烘渶甯哥敤鐨勮绠楁柟娉曪紝宸茬粡鑳藉鍑嗙‘棰勬祴鏉愭枡鐨勫绉嶇墿鐞嗘€ц川銆?/p>
+      <h3>璁＄畻鏂规硶</h3>
+      <p>鏈爺绌堕噰鐢╒ASP杞欢鍖呰繘琛岀涓€鎬у師鐞嗚绠楋紝浣跨敤鎶曞奖缂€鍔犳尝锛圥AW锛夋柟娉曟弿杩扮瀛愬疄涓庝环鐢靛瓙涔嬮棿鐨勭浉浜掍綔鐢ㄣ€備氦鎹㈠叧鑱旀硾鍑介噰鐢ㄥ箍涔夋搴﹁繎浼硷紙GGA锛変笅鐨凱BE褰㈠紡銆傛埅鏂兘璁剧疆涓?00 eV锛宬鐐圭綉鏍兼牴鎹綋绯诲ぇ灏忚繘琛屾敹鏁涙€ф祴璇曘€?/p>
+      <div style="background:#f5f8fb;padding:16px;border-radius:10px;margin:16px 0;font-family:monospace;font-size:12px;line-height:1.8;overflow-x:auto">
+        <div style="color:#666"># INCAR 鍏抽敭鍙傛暟</div>
+        <div>ENCUT = 500</div>
+        <div>EDIFF = 1E-6</div>
+        <div>IBRION = 2</div>
+        <div>NSW = 100</div>
+        <div>ISIF = 3</div>
+      </div>
+      <h3>缁撴灉涓庤璁?/h3>
+      <p>璁＄畻缁撴灉琛ㄦ槑锛岃鏉愭枡鍏锋湁鐙壒鐨勭數瀛愮粨鏋勭壒寰併€傝兘甯︾粨鏋勫垎鏋愭樉绀猴紝甯﹂殭澶у皬涓?.8 eV锛屽睘浜庣洿鎺ュ甫闅欏崐瀵间綋銆傛€佸瘑搴﹀垎鏋愭彮绀轰簡鍚勮建閬撳鐢靛瓙缁撴瀯鐨勮础鐚€?/p>
+      <h3>缁撹</h3>
+      <p>鏈爺绌堕€氳繃绯荤粺鐨勭涓€鎬у師鐞嗚绠楋紝鎻ず浜嗘潗鏂欑殑鐢靛瓙缁撴瀯鍜岀墿鐞嗘€ц川锛屼负鍚庣画瀹為獙鐮旂┒鍜屽櫒浠跺簲鐢ㄦ彁渚涗簡鐞嗚鎸囧銆?/p>
+    </div>
+    
+    <!-- 浜掑姩鎸夐挳 -->
+    <div style="display:flex;gap:12px;margin:24px 0;padding:16px;background:var(--bg-secondary);border-radius:14px;justify-content:space-around">
+      <button onclick="ArticleManager.toggleLike('${articleId}');renderArticleDetail(currentData['page-article-detail']||{});UI.toast.success('鐐硅禐鎴愬姛')" style="display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer">
+        <i data-lucide="heart" class="lucide" style="width:22px;height:22px;color:${article.liked?'var(--primary)':'var(--text3)'};fill:${article.liked?'var(--primary)':'none'}"></i>
+        <span style="font-size:12px;color:var(--text2)">${article.likes||0}</span>
+      </button>
+      <button onclick="ArticleManager.toggleFavorite('${articleId}');UI.toast.success('宸叉敹钘?)" style="display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer">
+        <i data-lucide="bookmark" class="lucide" style="width:22px;height:22px;color:${article.favorited?'var(--blue)':'var(--text3)'};fill:${article.favorited?'var(--blue)':'none'}"></i>
+        <span style="font-size:12px;color:var(--text2)">鏀惰棌</span>
+      </button>
+      <button onclick="UI.toast.success('閾炬帴宸插鍒?)" style="display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer">
+        <i data-lucide="share-2" class="lucide" style="width:22px;height:22px;color:var(--text3)"></i>
+        <span style="font-size:12px;color:var(--text2)">鍒嗕韩</span>
+      </button>
+      <button onclick="UI.toast.info('涓炬姤宸叉彁浜?)" style="display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer">
+        <i data-lucide="flag" class="lucide" style="width:22px;height:22px;color:var(--text3)"></i>
+        <span style="font-size:12px;color:var(--text2)">涓炬姤</span>
+      </button>
+    </div>
+    
+    <!-- 璇勮鍖?-->
+    <div class="section-header"><div class="section-title" style="font-size:15px">璇勮 (${comments.length})</div><div class="section-more" onclick="UI.toast.info('鍒囨崲鎺掑簭')">鏈€鐑?/div></div>
+    
+    <!-- 鍙戣〃璇勮 -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;gap:10px">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#5ba3d9,#7ec0e8);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${getCurrentUser().avatar}</div>
+        <div style="flex:1">
+          <textarea class="form-textarea" id="comment-input" placeholder="鍐欎笅浣犵殑璇勮..." style="min-height:60px;margin-bottom:8px"></textarea>
+          <div style="display:flex;justify-content:flex-end">
+            <button class="btn btn-primary" style="padding:6px 16px;font-size:12px" onclick="ArticleManager.addComment('${articleId}',document.getElementById('comment-input').value);document.getElementById('comment-input').value='';renderArticleDetail(currentData['page-article-detail']||{});UI.toast.success('璇勮鍙戣〃鎴愬姛')"><i data-lucide="send" class="lucide icon-white" style="width:14px;height:14px"></i>鍙戣〃</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 璇勮鍒楄〃 -->
+    ${comments.map(c => `
+      <div class="card" style="margin-bottom:12px">
+        <div style="display:flex;gap:10px">
+          <div style="width:36px;height:36px;background:linear-gradient(135deg,#9b7ed8,#b8a0e8);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${c.user.avatar}</div>
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:13px;font-weight:700">${c.user.name}</div>
+              <div style="font-size:11px;color:var(--text3)">${c.time}</div>
+            </div>
+            <div style="font-size:13px;color:var(--text);line-height:1.6;margin:6px 0">${c.content}</div>
+            <div style="display:flex;gap:16px">
+              <span style="font-size:12px;color:var(--text3);cursor:pointer" onclick="UI.toast.success('鐐硅禐鎴愬姛')"><i data-lucide="heart" class="lucide" style="width:14px;height:14px"></i> ${c.likes}</span>
+              <span style="font-size:12px;color:var(--text3);cursor:pointer" onclick="UI.toast.info('鍥炲鍔熻兘')"><i data-lucide="message-circle" class="lucide" style="width:14px;height:14px"></i> 鍥炲</span>
+            </div>
+            ${c.replies && c.replies.length > 0 ? c.replies.map(r => `
+              <div style="margin-top:12px;padding:10px 12px;background:var(--bg-secondary);border-radius:10px">
+                <div style="display:flex;gap:8px">
+                  <div style="width:28px;height:28px;background:linear-gradient(135deg,#5ba3d9,#7ec0e8);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">${r.user.avatar}</div>
+                  <div style="flex:1">
+                    <div style="font-size:12px;font-weight:700">${r.user.name}</div>
+                    <div style="font-size:12px;color:var(--text);line-height:1.5;margin:4px 0">${r.content}</div>
+                    <div style="font-size:11px;color:var(--text3)">${r.time} 路 <span style="cursor:pointer" onclick="UI.toast.success('鐐硅禐鎴愬姛')">璧?${r.likes||0}</span></div>
+                  </div>
+                </div>
+              </div>
+            `).join('') : ''}
+          </div>
+        </div>
+      </div>
+    `).join('')}
+  `;
+  renderIcons();
+}
+
+function renderSettings() {
+  const u = getCurrentUser();
+  document.getElementById('setting-name').value = u.name;
+  document.getElementById('setting-bio').value = u.bio;
+}
+
+function renderMaterialsList() {
+  const materials = [
+    {formula:'MoS鈧?,name:'浜岀～鍖栭捈',bandgap:'1.8 eV',type:'鍗婂浣?,icon:'layers'},
+    {formula:'Graphene',name:'鐭冲ⅷ鐑?,bandgap:'0 eV',type:'鍗婇噾灞?,icon:'hexagon'},
+    {formula:'WTe鈧?,name:'浜岀⒉鍖栭挩',bandgap:'0 eV',type:'鎷撴墤鍗婇噾灞?,icon:'magnet'},
+    {formula:'h-BN',name:'鍏柟姘寲纭?,bandgap:'5.9 eV',type:'缁濈紭浣?,icon:'hexagon'},
+    {formula:'Bi鈧係e鈧?,name:'纭掑寲閾?,bandgap:'0.3 eV',type:'鎷撴墤缁濈紭浣?,icon:'shield'},
+    {formula:'FeSe',name:'纭掑寲浜氶搧',bandgap:'0 eV',type:'瓒呭浣?,icon:'zap'}
+  ];
+  const el = document.getElementById('materials-list');
+  if (el) el.innerHTML = materials.map(m => `<div class="list-item" onclick="navigateTo('page-results')"><div class="list-item-icon" style="background:linear-gradient(135deg,#a0d0f0,#80bde0)"><i data-lucide="${m.icon}" class="lucide icon-white"></i></div><div class="list-item-content"><div class="list-item-title">${m.formula} 路 ${m.name}</div><div class="list-item-sub">甯﹂殭 ${m.bandgap} 路 ${m.type}</div></div><i data-lucide="chevron-right" class="lucide list-item-arrow"></i></div>`).join('');
+}
+
+// ===== AI瀵硅瘽 =====
+function showLessonCatalog() {
+  if (typeof LearningSystem !== 'undefined' && typeof LearningSystem.showCatalog === 'function') {
+    LearningSystem.showCatalog();
+  } else if (typeof UI !== 'undefined' && UI.dialog) {
+    UI.dialog.actionSheet({
+      title: '璇剧▼鐩綍',
+      actions: [
+        { label: '绗?璇撅細DFT鍩烘湰鍘熺悊', icon: 'book-open', onClick: () => UI.toast.info('鍒囨崲鍒扮1璇?) },
+        { label: '绗?璇撅細Kohn-Sham鏂圭▼', icon: 'book-open', onClick: () => UI.toast.info('鍒囨崲鍒扮2璇?) },
+        { label: '绗?璇撅細浜ゆ崲鍏宠仈娉涘嚱', icon: 'book-open', onClick: () => UI.toast.info('鍒囨崲鍒扮3璇?) },
+        { label: '绗?璇撅細骞抽潰娉㈠熀缁?, icon: 'book-open', onClick: () => UI.toast.info('鍒囨崲鍒扮4璇?) },
+        { label: '绗?璇撅細璧濆娍鏂规硶', icon: 'book-open', onClick: () => UI.toast.info('鍒囨崲鍒扮5璇?) }
+      ]
+    });
+  } else {
+    showToast('璇剧▼鐩綍锛氱1-5璇?);
+  }
+}
+function cancelJob(btn) {
+  if (typeof UI !== 'undefined' && UI.dialog) {
+    UI.dialog.confirm({
+      title: '鍙栨秷浠诲姟',
+      message: '纭畾瑕佸彇娑堝綋鍓嶈繍琛屼腑鐨勮绠椾换鍔″悧锛熷凡浣跨敤鐨勭畻鍔涘皢鎸夊疄闄呮椂闀胯璐广€?,
+      confirmText: '纭鍙栨秷',
+      cancelText: '缁х画杩愯',
+      onConfirm: () => {
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i data-lucide="loader" class="lucide"></i>鍙栨秷涓?..'; renderIcons(); }
+        setTimeout(() => {
+          if (typeof JobManager !== 'undefined') {
+            const jobs = JobManager.jobs || [];
+            const running = jobs.find(j => j.status === 'running');
+            if (running) { running.status = 'cancelled'; }
+          }
+          if (typeof UI !== 'undefined') UI.toast.success('浠诲姟宸插彇娑?);
+          else showToast('浠诲姟宸插彇娑?);
+          goBack();
+        }, 1000);
+      }
+    });
+  } else {
+    showToast('浠诲姟宸插彇娑?);
+    setTimeout(() => goBack(), 800);
+  }
+}
+function shareArticle() {
+  if (typeof UI !== 'undefined' && UI.dialog) {
+    UI.dialog.actionSheet({
+      title: '鍒嗕韩鏂囩珷',
+      actions: [
+        { label: '澶嶅埗閾炬帴', icon: 'link', onClick: () => { try { navigator.clipboard.writeText(window.location.href); } catch(e) {} UI.toast.success('閾炬帴宸插鍒?); } },
+        { label: '鍒嗕韩鍒板井淇?, icon: 'message-circle', onClick: () => UI.toast.info('璇锋埅鍥惧垎浜埌寰俊') },
+        { label: '鍒嗕韩鍒板井鍗?, icon: 'twitter', onClick: () => UI.toast.info('姝ｅ湪鎵撳紑寰崥鍒嗕韩...') },
+        { label: '鐢熸垚娴锋姤', icon: 'image', onClick: () => UI.toast.success('鍒嗕韩娴锋姤宸茬敓鎴?) },
+        { label: '淇濆瓨涓篜DF', icon: 'file-text', onClick: () => UI.toast.success('PDF宸蹭繚瀛?) }
+      ]
+    });
+  } else {
+    showToast('鍒嗕韩鍔熻兘锛氬鍒堕摼鎺?/ 寰俊 / 寰崥 / 娴锋姤');
+  }
+}
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+function clearChat() {
+  const container = document.getElementById('chat-messages');
+  if (!container) return;
+  container.innerHTML = `<div class="chat-message ai"><div class="chat-avatar" style="background:linear-gradient(135deg,var(--primary),var(--primary2))"><i data-lucide="brain" class="lucide icon-white"></i></div><div class="chat-bubble">对话已清空。我是UniSci AI助手，可以帮你进行科学计算、数据分析、代码生成和文献检索。请问有什么可以帮你的？</div></div>`;
+  renderIcons();
+}
+function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const safeText = escapeHtml(text);
+  const container = document.getElementById('chat-messages');
+  container.innerHTML += `<div class="chat-message user"><div class="chat-avatar" style="background:linear-gradient(135deg,var(--blue),var(--blue2))"><i data-lucide="user" class="lucide icon-white"></i></div><div class="chat-bubble">${safeText}</div></div>`;
+  input.value = '';
+  renderIcons();
+  setTimeout(() => {
+    container.innerHTML += `<div class="chat-message ai"><div class="chat-avatar" style="background:linear-gradient(135deg,var(--primary),var(--primary2))"><i data-lucide="brain" class="lucide icon-white"></i></div><div class="chat-bubble">收到你的问题："${safeText}"。我正在分析相关数据和文献，请稍候...（这是AI回复的模拟演示）</div></div>`;
+    renderIcons();
+    container.scrollTop = container.scrollHeight;
+  }, 800);
+}
+
+// ===== 初始化 =====
+window.addEventListener('load', function() {
+  if (typeof renderAll === 'function') renderAll();
+  // 优化：使用requestAnimationFrame节流进度条动画，避免每秒全局DOM查询
+  let progressAnimating = false;
+  function animateProgressBars() {
+    if (progressAnimating) return;
+    progressAnimating = true;
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.progress-fill').forEach(bar => {
+        const w = parseFloat(bar.style.width);
+        if (w > 0 && w < 95) {
+          bar.style.width = Math.min(95, w + 0.03) + '%';
+        }
+      });
+      progressAnimating = false;
+    });
+  }
+  setInterval(animateProgressBars, 1000);
+});
+</script>
+<!-- UniSci Core System (鏉垮潡10: 閫氱敤鍔熻兘绯荤粺) -->
+<script src="core.js"></script>
+<!-- UniSci User System (鏉垮潡9: 鐢ㄦ埛浣撶郴) -->
+<script src="user.js"></script>
+<!-- UniSci Compute System (鏉垮潡2: 璁＄畻浠诲姟绯荤粺) -->
+<script src="compute.js"></script>
+<!-- UniSci Notebook System (鏉垮潡5: Notebook绯荤粺) -->
+<script src="notebook.js"></script>
+<!-- UniSci Workflow System (鏉垮潡6: 宸ヤ綔娴佺郴缁? -->
+<script src="workflow.js"></script>
+<script src="workflow-canvas.js"></script>
+<!-- UniSci Molecule System (鏉垮潡7: 鍒嗗瓙寤烘ā绯荤粺) -->
+<script src="molecule.js"></script>
+<!-- UniSci Materials System (鏉垮潡8: 鏉愭枡鏁版嵁搴撶郴缁? -->
+<script src="materials.js"></script>
+<!-- UniSci Enhancements (鍏ㄩ潰鍔熻兘澧炲己) -->
+<script src="enhancements.js"></script>
+<script src="knowledge-graph-dynamic.js"></script>
+<script src="feature-closures.js"></script>
+<script src="performance-optimizer.js"></script>
+</body>
+</html>
+
