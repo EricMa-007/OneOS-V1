@@ -36,6 +36,16 @@ jobs:
           npx cap add ios || true
           npx cap sync ios
 
+      - name: Install CocoaPods dependencies
+        run: |
+          cd ios/App
+          echo "=== 目录内容 ==="
+          ls -la
+          echo "=== 安装CocoaPods ==="
+          pod install
+          echo "=== 安装后目录内容 ==="
+          ls -la *.xcworkspace 2>/dev/null || echo "未找到xcworkspace"
+
       - name: Build unsigned IPA
         run: |
           cd ios/App
